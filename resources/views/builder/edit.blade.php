@@ -63,6 +63,7 @@
         </div>
     </form>
 
+
     <!-- Editor Canvas -->
     <div id="gjs">{!! $page->html !!}</div>
 
@@ -83,10 +84,63 @@
                 styles: [
                     'https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css',
                     'https://cdn.jsdelivr.net/npm/grapesjs/dist/css/grapes.min.css',
-                    'https://cdn.jsdelivr.net/npm/grapesjs-preset-webpage/dist/grapesjs-preset-webpage.min.css'
+                    'https://cdn.jsdelivr.net/npm/grapesjs-preset-webpage/dist/grapesjs-preset-webpage.min.css',
+                    `
+    /* ===== ADMIN LAYOUT FIX ===== */
+    .admin-layout {
+      display: flex;
+      min-height: 100vh;
+      overflow: hidden;
+      background: #f5f6fa;
+    }
+
+    .admin-sidebar {
+      width: 240px;
+      min-height: 100vh;
+      background: #212529;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .admin-content {
+      flex: 1;
+      min-height: 100vh;
+      overflow-y: auto;
+      background: #f5f6fa;
+    }
+
+    .admin-navbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: #fff;
+    }
+
+    /* Prevent frontend containers breaking admin layout */
+    .admin-layout .container {
+      max-width: 100%;
+    }
+    `
                 ]
             }
+
         });
+
+        // ------------------ DEFINE applyFloatSupport ------------------
+        function applyFloatSupport(block) {
+            const el = block.el || block.getEl(); // Get block DOM element
+            if (!el) return;
+
+            const floatTargets = el.querySelectorAll('.float-target');
+            floatTargets.forEach(target => {
+                target.querySelectorAll(':scope > .float-item, :scope > *').forEach(child => {
+                    // Example float logic
+                    child.style.position = 'relative';
+                    // Add more logic here if needed
+                });
+            });
+        }
+
 
         editor.on('load', () => {
             const bm = editor.BlockManager;
@@ -96,175 +150,410 @@
             const existingForms = bm.getAll().filter(block => block.attributes.category?.id === 'forms');
             existingForms.forEach(block => bm.remove(block.id));
 
-            // ----------- BASIC BLOCKS -----------
-            const basicBlocks = [{
-                    id: '1col',
+            // ---------------- LAYOUT BLOCKS ----------------
+            const layoutBlocks = [{
+                    id: 'row-1col',
                     label: '1 Column',
+                    category: 'Layout',
                     content: `<div class="row"><div class="col">Column</div></div>`
                 },
                 {
-                    id: '2col',
+                    id: 'row-2col',
                     label: '2 Columns',
-                    content: `<div class="row"><div class="col">Col 1</div><div class="col">Col 2</div></div>`
+                    category: 'Layout',
+                    content: `<div class="row">
+        <div class="col">Col 1</div>
+        <div class="col">Col 2</div>
+      </div>`
                 },
                 {
-                    id: '3col',
+                    id: 'row-3col',
                     label: '3 Columns',
-                    content: `<div class="row"><div class="col">Col 1</div><div class="col">Col 2</div><div class="col">Col 3</div></div>`
+                    category: 'Layout',
+                    content: `<div class="row">
+        <div class="col">Col 1</div>
+        <div class="col">Col 2</div>
+        <div class="col">Col 3</div>
+      </div>`
                 },
                 {
-                    id: '2-3col',
+                    id: 'row-2-3col',
                     label: '2/3 Columns',
-                    content: `<div class="row"><div class="col-8">Col 1</div><div class="col-4">Col 2</div></div>`
-                },
-                {
+                    category: 'Layout',
+                    content: `<div class="row">
+        <div class="col-8">Col 1</div>
+        <div class="col-4">Col 2</div>
+      </div>`
+                }
+            ];
+
+            // ---------------- BASIC CONTENT ----------------
+            const contentBlocks = [{
                     id: 'text',
                     label: 'Text',
-                    content: `<p class="p-2 editable-text" contenteditable="true">Editable text here</p>`
+                    category: 'Content',
+                    content: `<p class="p-2 editable-text">Editable text here</p>`
+                },
+                {
+                    id: 'heading',
+                    label: 'Heading',
+                    category: 'Content',
+                    content: `<h2 class="fw-bold editable-text">Section heading</h2>`
                 },
                 {
                     id: 'link',
                     label: 'Link',
-                    content: `<a href="#" class="text-decoration-underline editable-text" contenteditable="true">Click here</a>`
+                    category: 'Content',
+                    content: `<a href="#" class="text-decoration-underline editable-text">Click here</a>`
                 },
                 {
+                    id: 'quote',
+                    label: 'Quote',
+                    category: 'Content',
+                    content: `<blockquote class="blockquote p-3 border-start border-primary">
+        <p class="mb-0 editable-text">"Quote here"</p>
+      </blockquote>`
+                }
+            ];
+
+            // ---------------- NAVBAR / FOOTER ----------------
+            const chromeBlocks = [{
+                    id: 'navbar',
+                    label: 'Navbar',
+                    category: 'Layout',
+                    content: `<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+          <a class="navbar-brand editable-text" href="#">Brand</a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                  data-bs-target="#mainNav">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="mainNav">
+            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+              <li class="nav-item"><a class="nav-link active editable-text" href="#">Home</a></li>
+              <li class="nav-item"><a class="nav-link editable-text" href="#">Features</a></li>
+              <li class="nav-item"><a class="nav-link editable-text" href="#">Pricing</a></li>
+            </ul>
+          </div>
+        </div>
+      </nav>`
+                },
+                {
+                    id: 'footer-main',
+                    label: 'Footer',
+                    category: 'Layout',
+                    content: `<footer class="py-4 bg-dark text-white">
+        <div class="container text-center small editable-text">
+          © 2025 Your Company. All rights reserved.
+        </div>
+      </footer>`
+                },
+
+            ];
+            const sidebarBlocks = [{
+                    id: 'layout-sidebar-left',
+                    label: 'Page Layout (Sidebar Left)',
+                    category: 'Layout',
+                    content: `
+<div class="admin-layout d-flex">
+
+  <!-- SIDEBAR LEFT -->
+  <aside class="admin-sidebar bg-dark text-white p-3">
+    <h5 class="mb-4 editable-text">CMS Panel</h5>
+    <ul class="nav flex-column gap-2">
+      <li><a class="nav-link text-white editable-text" href="#">Dashboard</a></li>
+      <li><a class="nav-link text-white editable-text" href="#">Banner</a></li>
+      <li><a class="nav-link text-white editable-text" href="#">Product</a></li>
+      <li><a class="nav-link text-white editable-text" href="#">Category</a></li>
+    </ul>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <div class="admin-content flex-grow-1 bg-light">
+    <header class="admin-navbar shadow-sm p-3 bg-white">
+      <span class="editable-text">Admin Dashboard</span>
+    </header>
+
+    <main class="p-4">
+      <h2 class="editable-text">Main Content Area</h2>
+      <p class="editable-text">
+        Drag tables, forms, sections, or content blocks here.
+      </p>
+    </main>
+  </div>
+
+</div>
+`
+                },
+
+                {
+                    id: 'layout-sidebar-right',
+                    label: 'Page Layout (Sidebar Right)',
+                    category: 'Layout',
+                    content: `
+<div class="admin-layout d-flex">
+
+  <!-- MAIN CONTENT -->
+  <div class="admin-content flex-grow-1 bg-light">
+    <header class="admin-navbar shadow-sm p-3 bg-white">
+      <span class="editable-text">Admin Dashboard</span>
+    </header>
+
+    <main class="p-4">
+      <h2 class="editable-text">Main Content Area</h2>
+      <p class="editable-text">
+        Drag tables, forms, sections, or content blocks here.
+      </p>
+    </main>
+  </div>
+
+  <!-- SIDEBAR RIGHT -->
+  <aside class="admin-sidebar bg-dark text-white p-3">
+    <h5 class="mb-4 editable-text">CMS Panel</h5>
+    <ul class="nav flex-column gap-2">
+      <li><a class="nav-link text-white editable-text" href="#">Dashboard</a></li>
+      <li><a class="nav-link text-white editable-text" href="#">Banner</a></li>
+      <li><a class="nav-link text-white editable-text" href="#">Product</a></li>
+      <li><a class="nav-link text-white editable-text" href="#">Category</a></li>
+    </ul>
+  </aside>
+
+</div>
+`
+                }
+            ];
+
+
+
+
+            // ---------------- HERO / MARKETING SECTIONS (Responsive) ----------------
+            const sectionBlocks = [{
+                    id: 'hero-main',
+                    label: 'Hero Section',
+                    category: 'Sections',
+                    content: `
+<section class="py-5 bg-light hero-section">
+  <div class="container">
+    <div class="row align-items-center flex-wrap">
+      <div class="col-md-6">
+        <h1 class="fw-bold display-5 editable-text">
+          The next generation<br>
+          <span class="text-primary">website builder</span>
+        </h1>
+        <p class="mt-3 text-muted editable-text">
+          Powerful and easy to use drag & drop website builder for blogs, business sites or e-commerce stores.
+        </p>
+        <div class="mt-4 d-flex flex-wrap gap-2">
+          <a href="#" class="btn btn-primary btn-lg editable-text">Free Download</a>
+          <a href="#" class="btn btn-outline-secondary btn-lg editable-text">Live Demo</a>
+        </div>
+        <div class="mt-4 row g-3">
+          <div class="col-6 col-md-3 text-center"><div class="fw-bold editable-text">Security</div></div>
+          <div class="col-6 col-md-3 text-center"><div class="fw-bold editable-text">Customization</div></div>
+          <div class="col-6 col-md-3 text-center"><div class="fw-bold editable-text">E-commerce</div></div>
+          <div class="col-6 col-md-3 text-center"><div class="fw-bold editable-text">Localization</div></div>
+        </div>
+      </div>
+      <div class="col-md-6 text-center">
+        <img src="https://via.placeholder.com/600x400" class="img-fluid rounded shadow" alt="Hero Image">
+      </div>
+    </div>
+  </div>
+</section>`,
+                    script() {
+                        applyFloatSupport(this);
+                    }
+                },
+                {
+                    id: 'features-4col',
+                    label: 'Features Grid',
+                    category: 'Sections',
+                    content: `
+<section class="py-5 bg-white">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h2 class="fw-bold editable-text">Why choose our builder?</h2>
+      <p class="text-muted editable-text">Design and launch beautiful websites in minutes.</p>
+    </div>
+    <div class="row g-4">
+      ${[1,2,3,4].map(()=>`
+              <div class="col-6 col-md-3">
+                <div class="card h-100 shadow-sm border-0">
+                  <div class="card-body text-center">
+                    <h5 class="fw-bold editable-text">Feature title</h5>
+                    <p class="text-muted editable-text">Short description here.</p>
+                  </div>
+                </div>
+              </div>`).join('')}
+    </div>
+  </div>
+</section>`,
+                    script() {
+                        applyFloatSupport(this);
+                    }
+                },
+                {
+                    id: 'cta-section',
+                    label: 'Call To Action',
+                    category: 'Sections',
+                    content: `
+<section class="py-5 bg-primary text-white text-center">
+  <div class="container">
+    <h2 class="fw-bold editable-text">Ready to build your next website?</h2>
+    <p class="mb-4 editable-text">Start for free and upgrade anytime.</p>
+    <a href="#" class="btn btn-light btn-lg editable-text">Get Started</a>
+  </div>
+</section>`,
+                    script() {
+                        applyFloatSupport(this);
+                    }
+                },
+                {
+                    id: 'testimonials',
+                    label: 'Testimonials',
+                    category: 'Sections',
+                    content: `
+<section class="py-5 bg-light">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h2 class="fw-bold editable-text">What customers say</h2>
+    </div>
+    <div class="row g-4">
+      ${[1,2,3].map(()=>`
+              <div class="col-12 col-md-4">
+                <div class="card h-100 shadow-sm border-0">
+                  <div class="card-body">
+                    <p class="text-muted editable-text">“Amazing builder and very easy to use.”</p>
+                    <div class="fw-bold editable-text">Customer Name</div>
+                    <small class="text-muted editable-text">Company</small>
+                  </div>
+                </div>
+              </div>`).join('')}
+    </div>
+  </div>
+</section>`,
+                    script() {
+                        applyFloatSupport(this);
+                    }
+                }
+            ];
+
+
+            // ---------------- MEDIA BLOCKS ----------------
+            const mediaBlocks = [{
                     id: 'image',
                     label: 'Image',
-                    content: `<img src="https://via.placeholder.com/400x200" class="img-fluid">`
+                    category: 'Media',
+                    content: `<img src="https://via.placeholder.com/800x400"
+                     class="img-fluid rounded shadow" alt="Image">`
                 },
                 {
                     id: 'video',
                     label: 'Video',
+                    category: 'Media',
                     content: `
-        <div class="ratio ratio-16x9 video-wrapper">
-            <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ"
-                frameborder="0" allowfullscreen
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture">
-            </iframe>
-        </div>
-    `,
+<div class="ratio ratio-16x9 video-wrapper">
+  <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+    frameborder="0" allowfullscreen
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture">
+  </iframe>
+</div>`,
                     script: function() {
-                        // Prevent GrapesJS from selecting parent while interacting
                         const iframe = this.querySelector('iframe');
-                        iframe.addEventListener('mousedown', e => e.stopPropagation());
+                        iframe && iframe.addEventListener('mousedown', e => e.stopPropagation());
                     }
                 },
-
                 {
-                    id: 'quote',
-                    label: 'Quote',
-                    content: `<blockquote class="blockquote p-3 border-start border-primary"><p class="mb-0 editable-text" contenteditable="true">"Quote here"</p></blockquote>`
-                },
-                {
-                    id: 'header',
-                    label: 'Header',
-                    content: `<header class="p-4 bg-primary text-white text-center"><h1 class="editable-text" contenteditable="true">Website Header</h1></header>`
-                },
-                {
-                    id: 'footer-basic',
-                    label: 'Footer',
-                    content: `<footer class="p-4 bg-dark text-white text-center editable-text" contenteditable="true">© 2025 My Website</footer>`
+                    id: 'media-gallery',
+                    label: 'Image Gallery',
+                    category: 'Media',
+                    content: `
+<div class="row g-3">
+  <div class="col-md-4"><img src="https://via.placeholder.com/400"
+    class="img-fluid rounded shadow" alt=""></div>
+  <div class="col-md-4"><img src="https://via.placeholder.com/400"
+    class="img-fluid rounded shadow" alt=""></div>
+  <div class="col-md-4"><img src="https://via.placeholder.com/400"
+    class="img-fluid rounded shadow" alt=""></div>
+</div>`
                 }
             ];
-            // ----------- Add basic blocks to GrapesJS -----------
-            basicBlocks.forEach(block => {
-                bm.add(block.id, {
-                    label: block.label,
-                    content: block.content,
-                    category: 'Basic',
-                    attributes: {
-                        class: block.id === 'video' ? 'fa fa-video' : 'fa fa-square'
-                    },
-                    script: block.script
-                });
-            });
 
-
-            // ----------- EXTRA BLOCKS -----------
-            const extraBlocks = [{
-                    id: 'navbar',
-                    label: 'Navbar',
-                    content: `<nav class="navbar navbar-expand-lg navbar-dark bg-dark"><a class="navbar-brand" href="#">Brand</a></nav>`
+            // ---------------- E‑COMMERCE BLOCKS ----------------
+            const ecommerceBlocks = [{
+                    id: 'product-card',
+                    label: 'Product Card',
+                    category: 'E‑commerce',
+                    content: `
+<div class="card m-2 shadow" style="width:18rem;">
+  <img src="https://via.placeholder.com/300x150" class="card-img-top" alt="">
+  <div class="card-body">
+    <h5 class="card-title editable-text">Product Title</h5>
+    <p class="card-text editable-text">Product description goes here.</p>
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <span class="fw-bold editable-text">$49</span>
+      <span class="text-muted small editable-text">In stock</span>
+    </div>
+    <button class="btn btn-success w-100">Buy Now</button>
+  </div>
+</div>`
                 },
                 {
-                    id: 'card',
-                    label: 'Card',
-                    content: `<div class="card m-2 shadow" style="width:18rem;"><img src="https://via.placeholder.com/300x150" class="card-img-top"><div class="card-body"><h5 class="card-title editable-text" contenteditable="true">Card Title</h5><p class="card-text editable-text" contenteditable="true">Write anything you want here.</p><a href="#" class="btn btn-primary">Read More</a></div></div>`
-                },
-                {
-                    id: 'banner',
-                    label: 'Banner',
-                    content: `<section style="position:relative; background-image:url('https://via.placeholder.com/1200x400'); background-size:cover; padding:100px 20px;"><h2 class="editable-text text-white text-center fw-bold" contenteditable="true">Your Banner Title</h2><p class="editable-text text-white text-center" contenteditable="true">Click here to edit the banner text.</p></section>`
-                },
-                {
-                    id: 'footer-extra',
-                    label: 'Footer',
-                    content: `<footer class="p-4 bg-dark text-white text-center editable-text">© 2025 My Website</footer>`
+                    id: 'product-grid',
+                    label: 'Product Grid',
+                    category: 'E‑commerce',
+                    content: `
+<section class="py-5 bg-white">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="fw-bold editable-text mb-0">Featured Products</h2>
+      <a href="#" class="text-decoration-none editable-text">View all</a>
+    </div>
+    <div class="row g-4">
+      ${[1,2,3,4].map(()=>`
+                                                                              <div class="col-sm-6 col-md-3">
+                                                                                <div class="card h-100 shadow-sm border-0">
+                                                                                  <img src="https://via.placeholder.com/300x180" class="card-img-top" alt="">
+                                                                                  <div class="card-body">
+                                                                                    <h6 class="card-title editable-text">Product name</h6>
+                                                                                    <p class="card-text small text-muted editable-text">Short description.</p>
+                                                                                    <div class="d-flex justify-content-between align-items-center">
+                                                                                      <span class="fw-bold editable-text">$39</span>
+                                                                                      <button class="btn btn-sm btn-outline-primary">Add to cart</button>
+                                                                                    </div>
+                                                                                  </div>
+                                                                                </div>
+                                                                              </div>`).join('')}
+    </div>
+  </div>
+</section>`
                 }
             ];
-            extraBlocks.forEach(block => bm.add(block.id, {
-                ...block,
-                category: 'Extra',
-                attributes: {
-                    class: 'fa fa-clone'
-                }
-            }));
 
-            // ----------- MEDIA BLOCK -----------
-            bm.add('media-gallery', {
-                label: 'Image Gallery',
-                category: 'Media',
-                attributes: {
-                    class: 'fa fa-images'
-                },
-                content: `<div class="row g-3">
-                    <div class="col-md-4"><img src="https://via.placeholder.com/300" class="img-fluid rounded shadow"></div>
-                    <div class="col-md-4"><img src="https://via.placeholder.com/300" class="img-fluid rounded shadow"></div>
-                    <div class="col-md-4"><img src="https://via.placeholder.com/300" class="img-fluid rounded shadow"></div>
-                  </div>`
-            });
-
-            // ----- PRODUCT BLOCK -----
-            bm.add('product-card', {
-                label: 'Product Card',
-                category: 'E-commerce',
-                attributes: {
-                    class: 'fa fa-shopping-cart'
-                },
-                content: `<div class="card m-2 shadow" style="width:18rem;">
-                    <img src="https://via.placeholder.com/300x150" class="card-img-top">
-                    <div class="card-body">
-                        <h5 class="card-title editable-text" contenteditable="true">Product Title</h5>
-                        <p class="card-text editable-text" contenteditable="true">Product description goes here.</p>
-                        <button class="btn btn-success w-100">Buy Now</button>
-                    </div>
-                  </div>`
-            });
-
-            // ----------- BACKGROUND BLOCK -----------
-            bm.add('bg-section', {
+            // ---------------- BACKGROUND / HERO IMAGE SECTIONS ----------------
+            const backgroundBlocks = [{
+                id: 'bg-section',
                 label: 'Background Section',
-                category: 'Background Sections',
-                attributes: {
-                    class: 'fa fa-image'
-                },
-                content: `<section style="position:relative; background-image:url('https://via.placeholder.com/1200x500'); background-size:cover; background-position:center; padding:100px 20px;">
-                    <h2 class="editable-text text-white fw-bold" style="font-size:42px; text-align:center;">Click to Edit Title</h2>
-                    <p class="editable-text text-white" style="font-size:20px; text-align:center; max-width:900px; margin:0 auto;">Click here to edit this text and write anything you want over the image.</p>
-                  </section>`,
-                script: function() {
-                    const editableItems = this.querySelectorAll('.editable-text');
-                    editableItems.forEach(el => el.addEventListener('click', e => e.stopPropagation()));
-                }
-            });
-
-
-
+                category: 'Background',
+                content: `
+<section class="py-5 text-white"
+  style="position:relative;background-image:url('https://via.placeholder.com/1600x600');
+         background-size:cover;background-position:center;">
+  <div class="container text-center">
+    <h2 class="fw-bold mb-3 editable-text">Beautiful background section</h2>
+    <p class="mb-4 editable-text">
+      Write something catchy over a full‑width image to grab attention.
+    </p>
+    <a href="#" class="btn btn-light btn-lg editable-text">Primary action</a>
+  </div>
+</section>`
+            }];
 
             // ----------- FORMS BLOCKS -----------
             const formBlocks = [{
                     id: 'form-wrapper',
                     label: 'Form',
+                    category: 'Forms',
                     content: {
                         type: 'form-wrapper',
                         tagName: 'form',
@@ -275,6 +564,7 @@
                 {
                     id: 'form-input',
                     label: 'Input',
+                    category: 'Forms',
                     content: `<div class="mb-3">
                         <label class="form-label">Label</label>
                         <input type="text" class="form-control" placeholder="Enter text">
@@ -283,6 +573,7 @@
                 {
                     id: 'form-textarea',
                     label: 'Textarea',
+                    category: 'Forms',
                     content: `<div class="mb-3">
                         <label class="form-label">Label</label>
                         <textarea class="form-control" rows="4" placeholder="Enter text"></textarea>
@@ -291,16 +582,19 @@
                 {
                     id: 'form-select',
                     label: 'Select',
+                    category: 'Forms',
                     content: {
                         type: 'default',
-                        content: `<div class="mb-3">
-                <label class="form-label">Select</label>
-                <select class="form-select">
-                    <option disabled selected>Select...</option>
-                    <option>A</option>
-                    <option>B</option>
-                </select>
-            </div>`,
+                        content: `
+        <div class="mb-3">
+            <label class="form-label editable-text">Select</label>
+            <select class="form-select">
+                <option value="" disabled>Select...</option>
+                <option value="A" class="editable-text">Option A</option>
+                <option value="B" class="editable-text">Option B</option>
+            </select>
+        </div>
+        `,
                         script() {
                             const select = this.querySelector('select');
                             ['mousedown', 'mouseup', 'click', 'focus'].forEach(evt =>
@@ -315,6 +609,7 @@
                 {
                     id: 'form-checkbox',
                     label: 'Checkbox',
+                    category: 'Forms',
                     content: `<div class="form-check mb-3">
                         <input class="form-check-input" type="checkbox" id="check1">
                         <label class="form-check-label" for="check1">Checkbox Label</label>
@@ -343,6 +638,7 @@
                 {
                     id: 'form-radio',
                     label: 'Radio',
+                    category: 'Forms',
                     content: `<div class="mb-3">
                         <label class="form-label d-block">Choose Option</label>
                         <div class="form-check form-check-inline">
@@ -369,6 +665,7 @@
                 {
                     id: 'form-button',
                     label: 'Button',
+                    category: 'Forms',
                     content: `<button type="button" class="btn btn-primary w-100">Submit</button>`
                 },
                 {
@@ -679,26 +976,39 @@
                 }
             ];
 
-            // Register form blocks to block manager
-            formBlocks.forEach(b => {
-                const attrs = {
-                    class: `fa ${b.icon ?? 'fa-wpforms'}`
-                };
-                const opts = {
-                    id: b.id,
+
+
+            // ---------------- REGISTER ALL BLOCKS ----------------
+            const allBlocks = [
+                ...layoutBlocks,
+                ...contentBlocks,
+                ...chromeBlocks,
+                ...sidebarBlocks,
+                ...sectionBlocks,
+                ...mediaBlocks,
+                ...ecommerceBlocks,
+                ...backgroundBlocks,
+                ...formBlocks
+            ];
+
+
+            allBlocks.forEach(b => {
+                bm.add(b.id, {
                     label: b.label,
+                    category: b.category,
                     content: b.content,
-                    category: b.category ?? 'Forms',
-                    attributes: attrs
-                };
-                if (b.script) opts.script = b.script;
-                bm.add(b.id, opts);
+                    attributes: {
+                        class: 'fa fa-square'
+                    },
+                    ...(b.script ? {
+                        script: b.script
+                    } : {})
+                });
             });
 
-            // ----------------- Generic helpers for editing experience -----------------
-            // Make .editable-text double click editable globally inside editor
+            // ---------------- GLOBAL EDITABLE TEXT HELPER ----------------
             const makeGlobalEditable = () => {
-                const rootEl = editor.getEl();
+                const rootEl = editor.Canvas.getBody();
                 rootEl.querySelectorAll('.editable-text').forEach(el => {
                     if (el.getAttribute('data-edit-listener')) return;
                     el.setAttribute('data-edit-listener', '1');
@@ -711,16 +1021,15 @@
                 });
             };
 
-            // Observe canvas for newly added editable-text elements
             const canvasEl = editor.Canvas.getBody();
-            const gObserver = new MutationObserver(makeGlobalEditable);
-            gObserver.observe(canvasEl, {
+            const observer = new MutationObserver(makeGlobalEditable);
+            observer.observe(canvasEl, {
                 childList: true,
                 subtree: true
             });
             makeGlobalEditable();
 
-            // Optional: small safety - prevent forms inside canvas from submitting inside editor area
+            // Prevent form submit inside editor
             canvasEl.addEventListener('submit', e => e.preventDefault(), true);
         });
         // ---------------- FIX FILE INPUTS FOR EDITING EXISTING PAGES ----------------
@@ -747,14 +1056,41 @@
                 });
             });
         }
+
+        function runBlockScripts(components) {
+            components.forEach(comp => {
+                const script = comp.get('script');
+                if (script && typeof script === 'function') {
+                    script.call(comp);
+                }
+                // Recursively run scripts for nested components
+                const children = comp.get('components');
+                if (children && children.length) runBlockScripts(children.models);
+            });
+        }
+
         @if (!empty($page->gjs_json))
+            // Load saved GrapesJS project
             editor.loadProjectData(@json($page->gjs_json));
-            fixFileInputs(); // ← call here
+
+            // Re-run scripts for all blocks (sections, forms, etc.)
+            runBlockScripts(editor.getComponents().models);
+
+            // Fix file inputs for editing
+            fixFileInputs();
         @elseif (!empty($page->html))
-            editor.setComponents(@json($page->html));
-            editor.setStyle(@json($page->css));
-            fixFileInputs(); // ← call here
+            // Load raw HTML + CSS
+            editor.setComponents(`{!! $page->html !!}`);
+            editor.setStyle(`{!! $page->css !!}`);
+
+            // Re-run scripts for all loaded blocks
+            runBlockScripts(editor.getComponents().models);
+
+            // Fix file inputs for editing
+            fixFileInputs();
         @endif
+
+
 
         // BEFORE SUBMIT: put GrapesJS data into hidden inputs
         document.getElementById('saveForm').addEventListener('submit', function(e) {
