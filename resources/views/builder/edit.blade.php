@@ -17,12 +17,62 @@
             margin: 0;
         }
 
+        /* GrapesJS Canvas */
         #gjs {
-            height: 100vh !important;
+            height: calc(100vh - 50px) !important;
+            /* Subtract top bar height */
+            margin-top: 50px;
+            /* Push down so top bar doesn't overlap */
         }
+
 
         .editable-text {
             cursor: text !important;
+        }
+
+        /* Top Bar Container */
+        .editor-topbar {
+            position: fixed;
+            top: 1px;
+            left: 10px;
+            right: 10px;
+            z-index: 9999;
+            background: #ffffff;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            gap: 5px;
+        }
+
+        /* Back Button */
+        .editor-topbar .btn-back {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: 500;
+            color: #495057;
+        }
+
+        /* Save Button */
+        .editor-topbar .btn-save {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: linear-gradient(90deg, #4e9af1, #1a73e8);
+            border: none;
+            color: #fff;
+            font-weight: 500;
+            padding: 0.5rem 1.2rem;
+            border-radius: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .editor-topbar .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
     </style>
 
@@ -36,17 +86,52 @@
 
 <body>
     @if (session('success'))
-        <div id="saveMessage"
-            style="position:fixed; top:10px; right:10px; background:green; color:white; padding:10px; border-radius:5px; z-index:9999;">
+        <div id="saveMessage">
             {{ session('success') }}
         </div>
+
+        <style>
+            #saveMessage {
+                position: fixed;
+                top: 80px;
+                /* below top bar */
+                right: 20px;
+                background: #28a745;
+                /* green success color */
+                color: #fff;
+                padding: 12px 20px;
+                border-radius: 6px;
+                z-index: 10000;
+                /* above editor and topbar */
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+                font-weight: 500;
+                opacity: 0;
+                transform: translateY(-20px);
+                transition: all 0.4s ease-in-out;
+            }
+
+            #saveMessage.show {
+                opacity: 0.95;
+                transform: translateY(0);
+            }
+        </style>
+
         <script>
-            setTimeout(() => {
-                const msg = document.getElementById('saveMessage');
-                if (msg) msg.remove();
-            }, 3000); 
+            const msg = document.getElementById('saveMessage');
+            if (msg) {
+                // Add class to animate in
+                setTimeout(() => msg.classList.add('show'), 50);
+
+                // Remove after 3 seconds
+                setTimeout(() => {
+                    msg.classList.remove('show');
+                    // Remove from DOM after animation
+                    setTimeout(() => msg.remove(), 400);
+                }, 3000);
+            }
         </script>
     @endif
+
 
 
     <!-- Save Form -->
@@ -57,9 +142,13 @@
         <input type="hidden" name="gjs_json" id="gjs_json">
 
         <!-- Back & Save buttons -->
-        <div class="d-flex justify-content-between top-buttons">
-            <a href="{{ route('pages.index') }}" class="btn btn-secondary">←</a>
-            <button type="submit" class="btn btn-primary">Save Page</button>
+        <div class="editor-topbar">
+            <a href="{{ route('pages.index') }}" class="btn-back">
+                ← Back
+            </a>
+            <button type="submit" class="btn-save">
+                Save Page
+            </button>
         </div>
     </form>
 
@@ -377,14 +466,14 @@
     </div>
     <div class="row g-4">
       ${[1,2,3,4].map(()=>`
-              <div class="col-6 col-md-3">
-                <div class="card h-100 shadow-sm border-0">
-                  <div class="card-body text-center">
-                    <h5 class="fw-bold editable-text">Feature title</h5>
-                    <p class="text-muted editable-text">Short description here.</p>
-                  </div>
-                </div>
-              </div>`).join('')}
+                          <div class="col-6 col-md-3">
+                            <div class="card h-100 shadow-sm border-0">
+                              <div class="card-body text-center">
+                                <h5 class="fw-bold editable-text">Feature title</h5>
+                                <p class="text-muted editable-text">Short description here.</p>
+                              </div>
+                            </div>
+                          </div>`).join('')}
     </div>
   </div>
 </section>`,
@@ -420,15 +509,15 @@
     </div>
     <div class="row g-4">
       ${[1,2,3].map(()=>`
-              <div class="col-12 col-md-4">
-                <div class="card h-100 shadow-sm border-0">
-                  <div class="card-body">
-                    <p class="text-muted editable-text">“Amazing builder and very easy to use.”</p>
-                    <div class="fw-bold editable-text">Customer Name</div>
-                    <small class="text-muted editable-text">Company</small>
-                  </div>
-                </div>
-              </div>`).join('')}
+                          <div class="col-12 col-md-4">
+                            <div class="card h-100 shadow-sm border-0">
+                              <div class="card-body">
+                                <p class="text-muted editable-text">“Amazing builder and very easy to use.”</p>
+                                <div class="fw-bold editable-text">Customer Name</div>
+                                <small class="text-muted editable-text">Company</small>
+                              </div>
+                            </div>
+                          </div>`).join('')}
     </div>
   </div>
 </section>`,
@@ -511,19 +600,19 @@
     </div>
     <div class="row g-4">
       ${[1,2,3,4].map(()=>`
-                                                                              <div class="col-sm-6 col-md-3">
-                                                                                <div class="card h-100 shadow-sm border-0">
-                                                                                  <img src="https://via.placeholder.com/300x180" class="card-img-top" alt="">
-                                                                                  <div class="card-body">
-                                                                                    <h6 class="card-title editable-text">Product name</h6>
-                                                                                    <p class="card-text small text-muted editable-text">Short description.</p>
-                                                                                    <div class="d-flex justify-content-between align-items-center">
-                                                                                      <span class="fw-bold editable-text">$39</span>
-                                                                                      <button class="btn btn-sm btn-outline-primary">Add to cart</button>
-                                                                                    </div>
-                                                                                  </div>
-                                                                                </div>
-                                                                              </div>`).join('')}
+                                                                                          <div class="col-sm-6 col-md-3">
+                                                                                            <div class="card h-100 shadow-sm border-0">
+                                                                                              <img src="https://via.placeholder.com/300x180" class="card-img-top" alt="">
+                                                                                              <div class="card-body">
+                                                                                                <h6 class="card-title editable-text">Product name</h6>
+                                                                                                <p class="card-text small text-muted editable-text">Short description.</p>
+                                                                                                <div class="d-flex justify-content-between align-items-center">
+                                                                                                  <span class="fw-bold editable-text">$39</span>
+                                                                                                  <button class="btn btn-sm btn-outline-primary">Add to cart</button>
+                                                                                                </div>
+                                                                                              </div>
+                                                                                            </div>
+                                                                                          </div>`).join('')}
     </div>
   </div>
 </section>`
