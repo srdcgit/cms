@@ -276,7 +276,7 @@
                     },
                     {
                         name: 'Mobile',
-                        width: '375px'
+                        width: '395px'
                     }
                 ]
             }
