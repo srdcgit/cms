@@ -4,6 +4,9 @@
 <head>
     <title>Editor - {{ $page->title }}</title>
 
+    <!-- Bootstrap 5 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+
     <!-- GrapesJS Core CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/grapesjs/dist/css/grapes.min.css">
 
@@ -42,7 +45,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0.5rem 1rem;
+            padding: 0.25rem 1rem;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             gap: 5px;
         }
@@ -73,6 +76,24 @@
         .editor-topbar .btn-save:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Responsive Top Bar */
+        @media (max-width: 768px) {
+            .editor-topbar {
+                flex-direction: column;
+                gap: 0.5rem;
+                padding: 0.5rem;
+            }
+
+            .editor-topbar .btn-back {
+                font-size: 0.9rem;
+            }
+
+            .editor-topbar .btn-save {
+                font-size: 0.9rem;
+                padding: 0.4rem 0.8rem;
+            }
         }
     </style>
 
@@ -164,10 +185,29 @@
             storageManager: false,
             plugins: ['gjs-preset-webpage', 'gjs-blocks-basic'],
             pluginsOpts: {
-                'gjs-preset-webpage': {},
+                'gjs-preset-webpage': {
+                    showDevices: true
+                },
                 'gjs-blocks-basic': {
                     flexGrid: true
                 }
+            },
+            deviceManager: {
+                devices: [{
+                        name: 'Desktop',
+                        width: '',
+                    },
+                    {
+                        name: 'Tablet',
+                        width: '1024px', // increased from 768px
+                        widthMedia: '1024px',
+                    },
+                    {
+                        name: 'Mobile',
+                        width: '480px', // increased from 320px
+                        widthMedia: '480px',
+                    }
+                ]
             },
             canvas: {
                 styles: [
@@ -238,6 +278,14 @@
             // ----------- REMOVE DUPLICATE FORMS BLOCKS -----------
             const existingForms = bm.getAll().filter(block => block.attributes.category?.id === 'forms');
             existingForms.forEach(block => bm.remove(block.id));
+
+            // ---------------- LAYOUT BLOCKS ----------------
+
+            // Re-run scripts for all blocks (sections, forms, etc.)
+            runBlockScripts(editor.getComponents().models);
+
+            // Fix file inputs for editing
+            fixFileInputs();
 
             // ---------------- LAYOUT BLOCKS ----------------
             const layoutBlocks = [{
@@ -466,14 +514,14 @@
     </div>
     <div class="row g-4">
       ${[1,2,3,4].map(()=>`
-                          <div class="col-6 col-md-3">
-                            <div class="card h-100 shadow-sm border-0">
-                              <div class="card-body text-center">
-                                <h5 class="fw-bold editable-text">Feature title</h5>
-                                <p class="text-muted editable-text">Short description here.</p>
-                              </div>
-                            </div>
-                          </div>`).join('')}
+                                  <div class="col-6 col-md-3">
+                                    <div class="card h-100 shadow-sm border-0">
+                                      <div class="card-body text-center">
+                                        <h5 class="fw-bold editable-text">Feature title</h5>
+                                        <p class="text-muted editable-text">Short description here.</p>
+                                      </div>
+                                    </div>
+                                  </div>`).join('')}
     </div>
   </div>
 </section>`,
@@ -509,15 +557,15 @@
     </div>
     <div class="row g-4">
       ${[1,2,3].map(()=>`
-                          <div class="col-12 col-md-4">
-                            <div class="card h-100 shadow-sm border-0">
-                              <div class="card-body">
-                                <p class="text-muted editable-text">“Amazing builder and very easy to use.”</p>
-                                <div class="fw-bold editable-text">Customer Name</div>
-                                <small class="text-muted editable-text">Company</small>
-                              </div>
-                            </div>
-                          </div>`).join('')}
+                                  <div class="col-12 col-md-4">
+                                    <div class="card h-100 shadow-sm border-0">
+                                      <div class="card-body">
+                                        <p class="text-muted editable-text">“Amazing builder and very easy to use.”</p>
+                                        <div class="fw-bold editable-text">Customer Name</div>
+                                        <small class="text-muted editable-text">Company</small>
+                                      </div>
+                                    </div>
+                                  </div>`).join('')}
     </div>
   </div>
 </section>`,
@@ -600,19 +648,19 @@
     </div>
     <div class="row g-4">
       ${[1,2,3,4].map(()=>`
-                                                                                          <div class="col-sm-6 col-md-3">
-                                                                                            <div class="card h-100 shadow-sm border-0">
-                                                                                              <img src="https://via.placeholder.com/300x180" class="card-img-top" alt="">
-                                                                                              <div class="card-body">
-                                                                                                <h6 class="card-title editable-text">Product name</h6>
-                                                                                                <p class="card-text small text-muted editable-text">Short description.</p>
-                                                                                                <div class="d-flex justify-content-between align-items-center">
-                                                                                                  <span class="fw-bold editable-text">$39</span>
-                                                                                                  <button class="btn btn-sm btn-outline-primary">Add to cart</button>
-                                                                                                </div>
-                                                                                              </div>
-                                                                                            </div>
-                                                                                          </div>`).join('')}
+                                                                                                  <div class="col-sm-6 col-md-3">
+                                                                                                    <div class="card h-100 shadow-sm border-0">
+                                                                                                      <img src="https://via.placeholder.com/300x180" class="card-img-top" alt="">
+                                                                                                      <div class="card-body">
+                                                                                                        <h6 class="card-title editable-text">Product name</h6>
+                                                                                                        <p class="card-text small text-muted editable-text">Short description.</p>
+                                                                                                        <div class="d-flex justify-content-between align-items-center">
+                                                                                                          <span class="fw-bold editable-text">$39</span>
+                                                                                                          <button class="btn btn-sm btn-outline-primary">Add to cart</button>
+                                                                                                        </div>
+                                                                                                      </div>
+                                                                                                    </div>
+                                                                                                  </div>`).join('')}
     </div>
   </div>
 </section>`
@@ -1095,6 +1143,34 @@
                 });
             });
 
+            // Add device switch commands
+            editor.Commands.add('set-device-desktop', {
+                run: function(editor) {
+                    editor.setDevice('Desktop');
+                }
+            });
+            editor.Commands.add('set-device-tablet', {
+                run: function(editor) {
+                    editor.setDevice('Tablet');
+                }
+            });
+            editor.Commands.add('set-device-mobile', {
+                run: function(editor) {
+                    editor.setDevice('Mobile');
+                }
+            });
+
+            // Load saved data
+            @if (!empty($page->gjs_json))
+                // Load saved GrapesJS project
+                editor.loadProjectData(@json($page->gjs_json));
+            @endif
+
+            // Always apply the saved CSS
+            @if (!empty($page->css))
+                editor.setStyle(`{!! $page->css !!}`);
+            @endif
+
             // ---------------- GLOBAL EDITABLE TEXT HELPER ----------------
             const makeGlobalEditable = () => {
                 const rootEl = editor.Canvas.getBody();
@@ -1157,27 +1233,6 @@
                 if (children && children.length) runBlockScripts(children.models);
             });
         }
-
-        @if (!empty($page->gjs_json))
-            // Load saved GrapesJS project
-            editor.loadProjectData(@json($page->gjs_json));
-
-            // Re-run scripts for all blocks (sections, forms, etc.)
-            runBlockScripts(editor.getComponents().models);
-
-            // Fix file inputs for editing
-            fixFileInputs();
-        @elseif (!empty($page->html))
-            // Load raw HTML + CSS
-            editor.setComponents(`{!! $page->html !!}`);
-            editor.setStyle(`{!! $page->css !!}`);
-
-            // Re-run scripts for all loaded blocks
-            runBlockScripts(editor.getComponents().models);
-
-            // Fix file inputs for editing
-            fixFileInputs();
-        @endif
 
 
 
