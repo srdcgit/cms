@@ -3,9 +3,8 @@
 
 <head>
     <title>Editor - {{ $page->title }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <!-- Bootstrap 5 CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
 
     <!-- GrapesJS Core CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/grapesjs/dist/css/grapes.min.css">
@@ -14,6 +13,8 @@
     <link rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/grapesjs-preset-webpage/dist/grapesjs-preset-webpage.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/grapesjs-blocks-basic/dist/grapesjs-blocks-basic.min.css">
+
+
 
     <style>
         body {
@@ -78,23 +79,80 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
-        /* Responsive Top Bar */
-        @media (max-width: 768px) {
-            .editor-topbar {
-                flex-direction: column;
-                gap: 0.5rem;
-                padding: 0.5rem;
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .container,
+        .container-fluid {
+            max-width: 100%;
+        }
+
+        .row {
+            margin-left: 0;
+            margin-right: 0;
+        }
+
+        `
+        /* ================= MOBILE FIXES ================= */
+
+        /* Force columns to stack on mobile */
+        @media (max-width: 576px) {
+            .row>[class*="col-"] {
+                width: 100% !important;
+                max-width: 100% !important;
+                flex: 0 0 100% !important;
             }
 
-            .editor-topbar .btn-back {
-                font-size: 0.9rem;
+            /* Text center on mobile */
+            h1,
+            h2,
+            h3,
+            h4,
+            h5,
+            h6,
+            p {
+                text-align: center;
             }
 
-            .editor-topbar .btn-save {
-                font-size: 0.9rem;
-                padding: 0.4rem 0.8rem;
+            /* Buttons full width */
+            .btn {
+                width: 100%;
+            }
+
+            /* Navbar fixes */
+            .navbar-nav {
+                text-align: center;
+            }
+
+            /* Sidebar layouts stack */
+            .admin-layout {
+                flex-direction: column !important;
+            }
+
+            .admin-sidebar {
+                width: 100% !important;
+                min-height: auto !important;
+            }
+
+            .admin-content {
+                width: 100% !important;
+            }
+
+            /* Image spacing */
+            img {
+                margin-bottom: 1rem;
+            }
+
+            /* Reduce padding */
+            section {
+                padding-top: 2rem !important;
+                padding-bottom: 2rem !important;
             }
         }
+
+        `
     </style>
 
     <!-- GrapesJS -->
@@ -103,6 +161,8 @@
     <!-- Plugins JS -->
     <script src="https://cdn.jsdelivr.net/npm/grapesjs-preset-webpage/dist/grapesjs-preset-webpage.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/grapesjs-blocks-basic/dist/grapesjs-blocks-basic.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
 </head>
 
 <body>
@@ -215,45 +275,71 @@
                     'https://cdn.jsdelivr.net/npm/grapesjs/dist/css/grapes.min.css',
                     'https://cdn.jsdelivr.net/npm/grapesjs-preset-webpage/dist/grapesjs-preset-webpage.min.css',
                     `
-    /* ===== ADMIN LAYOUT FIX ===== */
-    .admin-layout {
-      display: flex;
-      min-height: 100vh;
-      overflow: hidden;
-      background: #f5f6fa;
-    }
-
-    .admin-sidebar {
-      width: 240px;
-      min-height: 100vh;
-      background: #212529;
-      color: #fff;
-      flex-shrink: 0;
-    }
-
-    .admin-content {
-      flex: 1;
-      min-height: 100vh;
-      overflow-y: auto;
-      background: #f5f6fa;
-    }
-
-    .admin-navbar {
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      background: #fff;
-    }
-
-    /* Prevent frontend containers breaking admin layout */
-    .admin-layout .container {
-      max-width: 100%;
-    }
-    `
+            /* ===== ADMIN LAYOUT FIX ===== */
+            .admin-layout { display: flex; min-height: 100vh; overflow: hidden; background: #f5f6fa; }
+            .admin-sidebar { width: 240px; min-height: 100vh; background: #212529; color: #fff; flex-shrink: 0; }
+            .admin-content { flex: 1; min-height: 100vh; overflow-y: auto; background: #f5f6fa; }
+            .admin-navbar { position: sticky; top: 0; z-index: 10; background: #fff; }
+            .admin-layout .container { max-width: 100%; }
+            `
+                ]
+            },
+            deviceManager: {
+                devices: [{
+                        name: 'Desktop',
+                        width: ''
+                    },
+                    {
+                        name: 'Tablet',
+                        width: '768px'
+                    },
+                    {
+                        name: 'Mobile',
+                        width: '395px'
+                    }
                 ]
             }
-
         });
+
+        // IMPORTANT: Enable GrapesJS Panels for devices
+        const panelManager = editor.Panels;
+        panelManager.addButton('options', [{
+            id: 'device-desktop',
+            className: 'fa fa-desktop',
+            command: 'set-device-desktop',
+            attributes: {
+                title: 'Desktop'
+            }
+        }, {
+            id: 'device-tablet',
+            className: 'fa fa-tablet',
+            command: 'set-device-tablet',
+            attributes: {
+                title: 'Tablet'
+            }
+        }, {
+            id: 'device-mobile',
+            className: 'fa fa-mobile',
+            command: 'set-device-mobile',
+            attributes: {
+                title: 'Mobile'
+            }
+        }]);
+
+        // Register commands for switching devices
+        editor.Commands.add('set-device-desktop', {
+            run: editor => editor.setDevice('Desktop')
+        });
+        editor.Commands.add('set-device-tablet', {
+            run: editor => editor.setDevice('Tablet')
+        });
+        editor.Commands.add('set-device-mobile', {
+            run: editor => editor.setDevice('Mobile')
+        });
+
+
+
+
 
         // ------------------ DEFINE applyFloatSupport ------------------
         function applyFloatSupport(block) {
@@ -471,8 +557,10 @@
                     content: `
 <section class="py-5 bg-light hero-section">
   <div class="container">
-    <div class="row align-items-center flex-wrap">
-      <div class="col-md-6">
+   <div class="row align-items-center">
+
+      <div class="col-12 col-md-6">
+
         <h1 class="fw-bold display-5 editable-text">
           The next generation<br>
           <span class="text-primary">website builder</span>
