@@ -36,6 +36,7 @@ class PageBuilderController extends Controller
             'slug'     => $slug,
             'html'     => $request->html ?? '',
             'css'      => $request->css ?? '',
+            'js'       => $request->js ?? '',
             'gjs_json' => $request->gjs_json ?? '',
         ]);
 
@@ -57,6 +58,7 @@ class PageBuilderController extends Controller
 
         $page->html     = $request->html;
         $page->css      = $request->css;
+        $page->js   = $request->js;
         $page->gjs_json = $request->gjs_json;
         $page->save();
 

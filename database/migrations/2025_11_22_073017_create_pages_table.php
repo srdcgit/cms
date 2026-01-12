@@ -13,6 +13,7 @@ return new class extends Migration {
             $table->string('slug')->unique();
             $table->longText('html')->nullable();
             $table->longText('css')->nullable();
+            $table->longText('js')->nullable(); 
             $table->longText('gjs_json')->nullable(); // GrapesJS data
             $table->timestamps();
         });

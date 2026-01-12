@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,11 +13,11 @@ class Page extends Model
 
     // Specify fillable fields for mass assignment
     protected $fillable = [
-        'user_id',
         'title',
         'slug',
         'html',
         'css',
+        'js',
         'gjs_json',
     ];
 
