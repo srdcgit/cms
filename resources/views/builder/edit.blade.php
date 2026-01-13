@@ -351,6 +351,29 @@
             const bm = editor.BlockManager;
             const dc = editor.DomComponents;
 
+            // ✅ STEP 1: Generate FAQ HTML FIRST
+            const faqItems = [1, 2, 3].map(i => `
+    <div class="accordion-item mb-3 border rounded-3 shadow-sm">
+      <h2 class="accordion-header">
+        <button class="accordion-button ${i > 1 ? 'collapsed' : ''}"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#faq${i}"
+                aria-expanded="${i === 1}"
+                aria-controls="faq${i}">
+          <span class="editable-text">Question ${i}</span>
+        </button>
+      </h2>
+      <div id="faq${i}"
+           class="accordion-collapse collapse ${i === 1 ? 'show' : ''}"
+           data-bs-parent="#faqAccordion">
+        <div class="accordion-body editable-text">
+          Answer for question ${i}.
+        </div>
+      </div>
+    </div>
+  `).join('');
+
             // ----------- REMOVE DUPLICATE FORMS BLOCKS -----------
             const existingForms = bm.getAll().filter(block => block.attributes.category?.id === 'forms');
             existingForms.forEach(block => bm.remove(block.id));
@@ -592,14 +615,14 @@
     </div>
     <div class="row g-4">
       ${[1,2,3,4].map(()=>`
-                                                  <div class="col-6 col-lg-3">
-                                                    <div class="card h-100 shadow-sm border-0">
-                                                      <div class="card-body text-center">
-                                                        <h5 class="fw-bold editable-text">Feature title</h5>
-                                                        <p class="text-muted editable-text">Short description here.</p>
-                                                      </div>
-                                                    </div>
-                                                  </div>`).join('')}
+                                                                                  <div class="col-6 col-lg-3">
+                                                                                    <div class="card h-100 shadow-sm border-0">
+                                                                                      <div class="card-body text-center">
+                                                                                        <h5 class="fw-bold editable-text">Feature title</h5>
+                                                                                        <p class="text-muted editable-text">Short description here.</p>
+                                                                                      </div>
+                                                                                    </div>
+                                                                                  </div>`).join('')}
     </div>
   </div>
 </section>`,
@@ -635,22 +658,168 @@
     </div>
     <div class="row g-4">
       ${[1,2,3].map(()=>`
-                                                  <div class="col-12 col-lg-4">
-                                                    <div class="card h-100 shadow-sm border-0">
-                                                      <div class="card-body">
-                                                        <p class="text-muted editable-text">“Amazing builder and very easy to use.”</p>
-                                                        <div class="fw-bold editable-text">Customer Name</div>
-                                                        <small class="text-muted editable-text">Company</small>
-                                                      </div>
-                                                    </div>
-                                                  </div>`).join('')}
+                                                                                  <div class="col-12 col-lg-4">
+                                                                                    <div class="card h-100 shadow-sm border-0">
+                                                                                      <div class="card-body">
+                                                                                        <p class="text-muted editable-text">“Amazing builder and very easy to use.”</p>
+                                                                                        <div class="fw-bold editable-text">Customer Name</div>
+                                                                                        <small class="text-muted editable-text">Company</small>
+                                                                                      </div>
+                                                                                    </div>
+                                                                                  </div>`).join('')}
     </div>
   </div>
 </section>`,
                     script() {
                         applyFloatSupport(this);
                     }
+                },
+                {
+                    id: 'faq-section-pro',
+                    label: 'FAQ Section (Pro)',
+                    category: 'Sections',
+                    content: `
+<section class="py-5" style="background:#f8fafc;">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h2 class="fw-bold editable-text">Frequently Asked Questions</h2>
+      <p class="text-muted editable-text">Everything you need to know</p>
+    </div>
+
+    <div class="accordion accordion-flush" id="faqAccordion">
+      ${[1,2,3].map(i=>`
+              <div class="accordion-item mb-3 border rounded-3 shadow-sm">
+                <h2 class="accordion-header">
+                  <button class="accordion-button ${i>1?'collapsed':''}"
+                          type="button"
+                          data-bs-toggle="collapse"
+                          data-bs-target="#faq${i}"
+                          ${i===1 ? 'aria-expanded="true"' : 'aria-expanded="false"'}
+                          aria-controls="faq${i}">
+                    <span class="editable-text">Question ${i}</span>
+                  </button>
+                </h2>
+                <div id="faq${i}"
+                     class="accordion-collapse collapse ${i===1?'show':''}"
+                     data-bs-parent="#faqAccordion">
+                  <div class="accordion-body editable-text">
+                    Answer for question ${i}. Explain your service, policy here.
+                  </div>
+                </div>
+              </div>`).join('')}
+    </div>
+  </div>
+</section>
+
+
+
+`
+                },
+
+                {
+                    id: 'stats-section-pro',
+                    label: 'Stats / Counters (Pro)',
+                    category: 'Sections',
+                    content: `
+<section class="stats-section py-5" style="background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);">
+  <div class="container">
+    
+    <!-- Section Heading -->
+    <div class="text-center mb-5">
+      <h2 class="fw-bold text-white editable-text">Our Impact in Numbers</h2>
+      <p class="text-white-50 editable-text">
+        Trusted by thousands of customers worldwide
+      </p>
+    </div>
+
+    <!-- Stats -->
+    <div class="row g-4 text-center">
+      
+      <div class="col-6 col-md-3">
+        <div class="stat-card p-4 rounded-4 bg-white bg-opacity-10 h-100">
+          <div class="fs-1 mb-2">👥</div>
+          <h2 class="fw-bold text-white editable-text" data-count="10000">10K+</h2>
+          <p class="text-white-50 editable-text mb-0">Active Users</p>
+        </div>
+      </div>
+
+      <div class="col-6 col-md-3">
+        <div class="stat-card p-4 rounded-4 bg-white bg-opacity-10 h-100">
+          <div class="fs-1 mb-2">⬇️</div>
+          <h2 class="fw-bold text-white editable-text" data-count="50000">50K+</h2>
+          <p class="text-white-50 editable-text mb-0">Downloads</p>
+        </div>
+      </div>
+
+      <div class="col-6 col-md-3">
+        <div class="stat-card p-4 rounded-4 bg-white bg-opacity-10 h-100">
+          <div class="fs-1 mb-2">🚀</div>
+          <h2 class="fw-bold text-white editable-text" data-count="1200">1.2K</h2>
+          <p class="text-white-50 editable-text mb-0">Projects Completed</p>
+        </div>
+      </div>
+
+      <div class="col-6 col-md-3">
+        <div class="stat-card p-4 rounded-4 bg-white bg-opacity-10 h-100">
+          <div class="fs-1 mb-2">🌍</div>
+          <h2 class="fw-bold text-white editable-text" data-count="25">25+</h2>
+          <p class="text-white-50 editable-text mb-0">Countries Served</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+`
+                },
+
+                {
+                    id: 'team-section-pro',
+                    label: 'Team Section (Pro)',
+                    category: 'Sections',
+                    content: `
+<section class="py-5 bg-light">
+  <div class="container">
+
+    <!-- Heading -->
+    <div class="text-center mb-5">
+      <h2 class="fw-bold editable-text">Meet Our Team</h2>
+      <p class="text-muted editable-text">
+        Professionals who make everything possible
+      </p>
+    </div>
+
+    <div class="row g-4">
+      ${[1,2,3,4].map(()=>`
+                      <div class="col-6 col-md-3">
+                        <div class="card border-0 shadow-sm h-100 text-center">
+
+                          <!-- Image wrapper for ratio -->
+                          <div class="ratio ratio-1x1">
+                            <img 
+                              src="https://via.placeholder.com/400"
+                              class="img-fluid object-fit-cover rounded-top"
+                              alt="Team Member">
+                          </div>
+
+                          <div class="card-body">
+                            <h6 class="fw-bold mb-1 editable-text">Member Name</h6>
+                            <small class="text-muted editable-text">Role / Position</small>
+                          </div>
+
+                        </div>
+                      </div>`).join('')}
+    </div>
+
+  </div>
+</section>
+`
                 }
+
+
+
+
+
             ];
 
 
@@ -726,23 +895,56 @@
     </div>
     <div class="row g-4">
       ${[1,2,3,4].map(()=>`
-                                                                                                                  <div class="col-6 col-lg-3">
-                                                                                                                    <div class="card h-100 shadow-sm border-0">
-                                                                                                                      <img src="https://via.placeholder.com/300x180" class="card-img-top" alt="">
-                                                                                                                      <div class="card-body">
-                                                                                                                        <h6 class="card-title editable-text">Product name</h6>
-                                                                                                                        <p class="card-text small text-muted editable-text">Short description.</p>
-                                                                                                                        <div class="d-flex justify-content-between align-items-center">
-                                                                                                                          <span class="fw-bold editable-text">$39</span>
-                                                                                                                          <button class="btn btn-sm btn-outline-primary">Add to cart</button>
-                                                                                                                        </div>
-                                                                                                                      </div>
-                                                                                                                    </div>
-                                                                                                                  </div>`).join('')}
+                                                                                                                                                  <div class="col-6 col-lg-3">
+                                                                                                                                                    <div class="card h-100 shadow-sm border-0">
+                                                                                                                                                      <img src="https://via.placeholder.com/300x180" class="card-img-top" alt="">
+                                                                                                                                                      <div class="card-body">
+                                                                                                                                                        <h6 class="card-title editable-text">Product name</h6>
+                                                                                                                                                        <p class="card-text small text-muted editable-text">Short description.</p>
+                                                                                                                                                        <div class="d-flex justify-content-between align-items-center">
+                                                                                                                                                          <span class="fw-bold editable-text">$39</span>
+                                                                                                                                                          <button class="btn btn-sm btn-outline-primary">Add to cart</button>
+                                                                                                                                                        </div>
+                                                                                                                                                      </div>
+                                                                                                                                                    </div>
+                                                                                                                                                  </div>`).join('')}
+    </div>
+  </div>
+</section>`
+                },
+                {
+                    id: 'pricing-section',
+                    label: 'Pricing Table',
+                    category: 'E‑commerce',
+                    content: `
+<section class="py-5 bg-light">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h2 class="fw-bold editable-text">Simple Pricing</h2>
+      <p class="text-muted editable-text">Choose the plan that fits you</p>
+    </div>
+
+    <div class="row g-4">
+      ${['Basic','Pro','Enterprise'].map((plan,i)=>`
+                                    <div class="col-md-4">
+                                      <div class="card h-100 shadow-sm border-0 text-center">
+                                        <div class="card-body">
+                                          <h4 class="fw-bold editable-text">${plan}</h4>
+                                          <h2 class="my-3 editable-text">$${i===0?19:i===1?49:99}</h2>
+                                          <ul class="list-unstyled mb-4">
+                                            <li class="editable-text">✔ Feature One</li>
+                                            <li class="editable-text">✔ Feature Two</li>
+                                            <li class="editable-text">✔ Feature Three</li>
+                                          </ul>
+                                          <a href="#" class="btn btn-primary editable-text">Get Started</a>
+                                        </div>
+                                      </div>
+                                    </div>`).join('')}
     </div>
   </div>
 </section>`
                 }
+
             ];
 
             // ---------------- BACKGROUND / HERO IMAGE SECTIONS ----------------
@@ -877,6 +1079,28 @@
                         });
                     }
                 },
+                {
+                    id: 'newsletter-section',
+                    label: 'Newsletter Signup',
+                    category: 'Forms',
+                    content: `
+<section class="py-5 bg-primary text-white">
+  <div class="container text-center">
+    <h2 class="fw-bold editable-text">Subscribe to our newsletter</h2>
+    <p class="mb-4 editable-text">Get updates straight to your inbox</p>
+
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <form class="d-flex gap-2">
+          <input type="email" class="form-control" placeholder="Email address">
+          <button class="btn btn-dark editable-text">Subscribe</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>`
+                },
+
                 {
                     id: 'form-button',
                     label: 'Button',
@@ -1250,8 +1474,8 @@
             @endif
 
             @if (!empty($page->js))
-                editor.setComponents(editor.getHtml()); 
-                editor.setJs(`{!! $page->js !!}`); 
+                editor.setComponents(editor.getHtml());
+                editor.setJs(`{!! $page->js !!}`);
             @endif
 
             // ---------------- GLOBAL EDITABLE TEXT HELPER ----------------

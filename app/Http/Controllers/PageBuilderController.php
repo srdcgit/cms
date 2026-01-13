@@ -54,11 +54,18 @@ class PageBuilderController extends Controller
     // Update page content
     public function update(Request $request, $id)
     {
+        $request->validate([
+            'html' => 'nullable|string',
+            'css' => 'nullable|string',
+            'js' => 'nullable|string',
+            'gjs_json' => 'nullable|string',
+        ]);
+
         $page = Page::findOrFail($id);
 
         $page->html     = $request->html;
         $page->css      = $request->css;
-        $page->js   = $request->js;
+        $page->js       = $request->js;
         $page->gjs_json = $request->gjs_json;
         $page->save();
 
