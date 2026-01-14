@@ -150,6 +150,26 @@
                 padding-top: 2rem !important;
                 padding-bottom: 2rem !important;
             }
+
+            .accordion-button {
+                transition: transform 0.2s ease;
+            }
+
+            .accordion-button::after {
+                content: '\f107';
+                /* FontAwesome arrow or use your icon */
+                display: inline-block;
+                transition: transform 0.2s ease;
+            }
+
+            .accordion-button.collapsed::after {
+                transform: rotate(0deg);
+            }
+
+            .accordion-button:not(.collapsed)::after {
+                transform: rotate(180deg);
+            }
+
         }
 
         `
@@ -162,6 +182,7 @@
     <script src="https://cdn.jsdelivr.net/npm/grapesjs-preset-webpage/dist/grapesjs-preset-webpage.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/grapesjs-blocks-basic/dist/grapesjs-blocks-basic.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
 
 </head>
 
@@ -351,28 +372,28 @@
             const bm = editor.BlockManager;
             const dc = editor.DomComponents;
 
-            // ✅ STEP 1: Generate FAQ HTML FIRST
-            const faqItems = [1, 2, 3].map(i => `
-    <div class="accordion-item mb-3 border rounded-3 shadow-sm">
-      <h2 class="accordion-header">
-        <button class="accordion-button ${i > 1 ? 'collapsed' : ''}"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#faq${i}"
-                aria-expanded="${i === 1}"
-                aria-controls="faq${i}">
-          <span class="editable-text">Question ${i}</span>
-        </button>
-      </h2>
-      <div id="faq${i}"
-           class="accordion-collapse collapse ${i === 1 ? 'show' : ''}"
-           data-bs-parent="#faqAccordion">
-        <div class="accordion-body editable-text">
-          Answer for question ${i}.
-        </div>
-      </div>
-    </div>
-  `).join('');
+            //             // ✅ STEP 1: Generate FAQ HTML FIRST
+            //             const faqItems = [1, 2, 3].map(i => `
+        //     <div class="accordion-item mb-3 border rounded-3 shadow-sm">
+        //       <h2 class="accordion-header">
+        //         <button class="accordion-button ${i > 1 ? 'collapsed' : ''}"
+        //                 type="button"
+        //                 data-bs-toggle="collapse"
+        //                 data-bs-target="#faq${i}"
+        //                 aria-expanded="${i === 1}"
+        //                 aria-controls="faq${i}">
+        //           <span class="editable-text">Question ${i}</span>
+        //         </button>
+        //       </h2>
+        //       <div id="faq${i}"
+        //            class="accordion-collapse collapse ${i === 1 ? 'show' : ''}"
+        //            data-bs-parent="#faqAccordion">
+        //         <div class="accordion-body editable-text">
+        //           Answer for question ${i}.
+        //         </div>
+        //       </div>
+        //     </div>
+        //   `).join('');
 
             // ----------- REMOVE DUPLICATE FORMS BLOCKS -----------
             const existingForms = bm.getAll().filter(block => block.attributes.category?.id === 'forms');
@@ -495,26 +516,70 @@
 
   <!-- SIDEBAR LEFT -->
   <aside class="admin-sidebar bg-dark text-white p-3">
-    <h5 class="mb-4 editable-text">CMS Panel</h5>
+    <h5 class="mb-4">CMS Panel</h5>
+
     <ul class="nav flex-column gap-2">
-      <li><a class="nav-link text-white editable-text" href="#">Dashboard</a></li>
-      <li><a class="nav-link text-white editable-text" href="#">Banner</a></li>
-      <li><a class="nav-link text-white editable-text" href="#">Product</a></li>
-      <li><a class="nav-link text-white editable-text" href="#">Category</a></li>
+
+      <li>
+        <a class="nav-link text-white sidebar-link"
+           href="http://127.0.0.1:8000/page/dashboard"
+           data-page="/dashboard"
+           data-gjs-editable="false"
+           data-gjs-selectable="false"
+           data-gjs-hoverable="false"
+           data-gjs-draggable="false">
+           Dashboard
+        </a>
+      </li>
+
+      <li>
+        <a class="nav-link text-white sidebar-link"
+           href="/banner"
+           data-page="/banner"
+           data-gjs-editable="false"
+           data-gjs-selectable="false"
+           data-gjs-hoverable="false"
+           data-gjs-draggable="false">
+           Banner
+        </a>
+      </li>
+
+      <li>
+        <a class="nav-link text-white sidebar-link"
+           href="/product"
+           data-page="/product"
+           data-gjs-editable="false"
+           data-gjs-selectable="false"
+           data-gjs-hoverable="false"
+           data-gjs-draggable="false">
+           Product
+        </a>
+      </li>
+
+      <li>
+        <a class="nav-link text-white sidebar-link"
+           href="/category"
+           data-page="/category"
+           data-gjs-editable="false"
+           data-gjs-selectable="false"
+           data-gjs-hoverable="false"
+           data-gjs-draggable="false">
+           Category
+        </a>
+      </li>
+
     </ul>
   </aside>
 
   <!-- MAIN CONTENT -->
   <div class="admin-content flex-grow-1 bg-light">
     <header class="admin-navbar shadow-sm p-3 bg-white">
-      <span class="editable-text">Admin Dashboard</span>
+      Admin Dashboard
     </header>
 
     <main class="p-4">
-      <h2 class="editable-text">Main Content Area</h2>
-      <p class="editable-text">
-        Drag tables, forms, sections, or content blocks here.
-      </p>
+      <h2>Main Content Area</h2>
+      <p>Drag tables, forms, sections, or content blocks here.</p>
     </main>
   </div>
 
@@ -547,10 +612,10 @@
   <aside class="admin-sidebar bg-dark text-white p-3">
     <h5 class="mb-4 editable-text">CMS Panel</h5>
     <ul class="nav flex-column gap-2">
-      <li><a class="nav-link text-white editable-text" href="#">Dashboard</a></li>
-      <li><a class="nav-link text-white editable-text" href="#">Banner</a></li>
-      <li><a class="nav-link text-white editable-text" href="#">Product</a></li>
-      <li><a class="nav-link text-white editable-text" href="#">Category</a></li>
+      <li><a class="nav-link text-white sidebar-link" href="/dashboard" data-page="/dashboard" data-gjs-editable="false" data-gjs-selectable="false" data-gjs-hoverable="false" data-gjs-draggable="false"> Dashboard </a></li>
+      <li><a class="nav-link text-white editable-text" data-page="/banner" href="/banner">Banner</a></li>
+      <li><a class="nav-link text-white editable-text" data-page="/product" href="/product">Product</a></li>
+      <li><a class="nav-link text-white editable-text" data-page="/category" href="/category">Category</a></li>
     </ul>
   </aside>
 
@@ -559,8 +624,70 @@
                 }
             ];
 
+            // Add this at the top of your JS file
+            window.__gjsIsEditor = !!document.querySelector('.gjs-frame');
 
 
+            function initSidebar(root, defaultPage = '/dashboard') {
+                setTimeout(() => {
+                    const links = root.querySelectorAll('.sidebar-link');
+                    const content = root.querySelector('.admin-content');
+
+                    if (!links.length || !content) return;
+
+                    async function loadPage(url) {
+                        try {
+                            if (!window.__gjsIsEditor) {
+                                const res = await fetch(url);
+                                if (!res.ok) throw new Error('Page not found');
+                                content.innerHTML = await res.text();
+                                window.history.pushState({}, '', url);
+                            } else {
+                                // Editor-safe preview
+                                content.innerHTML = `<div class="p-4 text-muted">Loaded: ${url}</div>`;
+                            }
+
+                            links.forEach(l => l.classList.remove('active'));
+                            const active = [...links].find(l => l.dataset.page === url);
+                            if (active) active.classList.add('active');
+
+                        } catch (e) {
+                            console.error(e);
+                            window.location.href = url;
+                        }
+                    }
+
+                    links.forEach(link => {
+                        link.addEventListener('click', e => {
+                            e.preventDefault();
+                            e.stopImmediatePropagation();
+                            loadPage(link.dataset.page);
+                        });
+                    });
+
+                    if (defaultPage) loadPage(defaultPage);
+
+                }, 100);
+            }
+
+
+            editor.BlockManager.add('layout-sidebar-left', {
+                label: 'Sidebar Left Layout',
+                category: 'Layout',
+                content: sidebarBlocks[0].content,
+                script: function() {
+                    initSidebar(this, '/dashboard'); // auto-load default page
+                }
+            });
+
+            editor.BlockManager.add('layout-sidebar-right', {
+                label: 'Sidebar Right Layout',
+                category: 'Layout',
+                content: sidebarBlocks[1].content,
+                script: function() {
+                    initSidebar(this, '/dashboard'); // auto-load default page
+                }
+            });
 
             // ---------------- HERO / MARKETING SECTIONS (Responsive) ----------------
             const sectionBlocks = [{
@@ -615,14 +742,14 @@
     </div>
     <div class="row g-4">
       ${[1,2,3,4].map(()=>`
-                                                                                  <div class="col-6 col-lg-3">
-                                                                                    <div class="card h-100 shadow-sm border-0">
-                                                                                      <div class="card-body text-center">
-                                                                                        <h5 class="fw-bold editable-text">Feature title</h5>
-                                                                                        <p class="text-muted editable-text">Short description here.</p>
-                                                                                      </div>
-                                                                                    </div>
-                                                                                  </div>`).join('')}
+                                                                                                          <div class="col-6 col-lg-3">
+                                                                                                            <div class="card h-100 shadow-sm border-0">
+                                                                                                              <div class="card-body text-center">
+                                                                                                                <h5 class="fw-bold editable-text">Feature title</h5>
+                                                                                                                <p class="text-muted editable-text">Short description here.</p>
+                                                                                                              </div>
+                                                                                                            </div>
+                                                                                                          </div>`).join('')}
     </div>
   </div>
 </section>`,
@@ -658,62 +785,21 @@
     </div>
     <div class="row g-4">
       ${[1,2,3].map(()=>`
-                                                                                  <div class="col-12 col-lg-4">
-                                                                                    <div class="card h-100 shadow-sm border-0">
-                                                                                      <div class="card-body">
-                                                                                        <p class="text-muted editable-text">“Amazing builder and very easy to use.”</p>
-                                                                                        <div class="fw-bold editable-text">Customer Name</div>
-                                                                                        <small class="text-muted editable-text">Company</small>
-                                                                                      </div>
-                                                                                    </div>
-                                                                                  </div>`).join('')}
+                                                                                                          <div class="col-12 col-lg-4">
+                                                                                                            <div class="card h-100 shadow-sm border-0">
+                                                                                                              <div class="card-body">
+                                                                                                                <p class="text-muted editable-text">“Amazing builder and very easy to use.”</p>
+                                                                                                                <div class="fw-bold editable-text">Customer Name</div>
+                                                                                                                <small class="text-muted editable-text">Company</small>
+                                                                                                              </div>
+                                                                                                            </div>
+                                                                                                          </div>`).join('')}
     </div>
   </div>
 </section>`,
                     script() {
                         applyFloatSupport(this);
                     }
-                },
-                {
-                    id: 'faq-section-pro',
-                    label: 'FAQ Section (Pro)',
-                    category: 'Sections',
-                    content: `
-<section class="py-5" style="background:#f8fafc;">
-  <div class="container">
-    <div class="text-center mb-5">
-      <h2 class="fw-bold editable-text">Frequently Asked Questions</h2>
-      <p class="text-muted editable-text">Everything you need to know</p>
-    </div>
-
-    <div class="accordion accordion-flush" id="faqAccordion">
-      ${[1,2,3].map(i=>`
-              <div class="accordion-item mb-3 border rounded-3 shadow-sm">
-                <h2 class="accordion-header">
-                  <button class="accordion-button ${i>1?'collapsed':''}"
-                          type="button"
-                          data-bs-toggle="collapse"
-                          data-bs-target="#faq${i}"
-                          ${i===1 ? 'aria-expanded="true"' : 'aria-expanded="false"'}
-                          aria-controls="faq${i}">
-                    <span class="editable-text">Question ${i}</span>
-                  </button>
-                </h2>
-                <div id="faq${i}"
-                     class="accordion-collapse collapse ${i===1?'show':''}"
-                     data-bs-parent="#faqAccordion">
-                  <div class="accordion-body editable-text">
-                    Answer for question ${i}. Explain your service, policy here.
-                  </div>
-                </div>
-              </div>`).join('')}
-    </div>
-  </div>
-</section>
-
-
-
-`
                 },
 
                 {
@@ -791,24 +877,24 @@
 
     <div class="row g-4">
       ${[1,2,3,4].map(()=>`
-                      <div class="col-6 col-md-3">
-                        <div class="card border-0 shadow-sm h-100 text-center">
+                                              <div class="col-6 col-md-3">
+                                                <div class="card border-0 shadow-sm h-100 text-center">
 
-                          <!-- Image wrapper for ratio -->
-                          <div class="ratio ratio-1x1">
-                            <img 
-                              src="https://via.placeholder.com/400"
-                              class="img-fluid object-fit-cover rounded-top"
-                              alt="Team Member">
-                          </div>
+                                                  <!-- Image wrapper for ratio -->
+                                                  <div class="ratio ratio-1x1">
+                                                    <img 
+                                                      src="https://via.placeholder.com/400"
+                                                      class="img-fluid object-fit-cover rounded-top"
+                                                      alt="Team Member">
+                                                  </div>
 
-                          <div class="card-body">
-                            <h6 class="fw-bold mb-1 editable-text">Member Name</h6>
-                            <small class="text-muted editable-text">Role / Position</small>
-                          </div>
+                                                  <div class="card-body">
+                                                    <h6 class="fw-bold mb-1 editable-text">Member Name</h6>
+                                                    <small class="text-muted editable-text">Role / Position</small>
+                                                  </div>
 
-                        </div>
-                      </div>`).join('')}
+                                                </div>
+                                              </div>`).join('')}
     </div>
 
   </div>
@@ -821,8 +907,64 @@
 
 
             ];
+            editor.BlockManager.add('faq-section-pro', {
+                label: 'FAQ Section (Pro)',
+                category: 'Sections',
 
+                content: `
+<section class="py-5" style="background:#f8fafc;">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h2 class="fw-bold editable-text">Frequently Asked Questions</h2>
+      <p class="text-muted editable-text">Everything you need to know</p>
+    </div>
 
+    <div class="accordion faq-root">
+
+      <div class="accordion-item mb-3 border rounded-3 shadow-sm">
+        <button class="accordion-button"
+                aria-expanded="true">
+          <span class="editable-text">Question 1</span>
+        </button>
+        <div class="accordion-collapse show">
+          <div class="accordion-body editable-text">
+            Answer for question 1
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item mb-3 border rounded-3 shadow-sm">
+        <button class="accordion-button collapsed"
+                aria-expanded="false">
+          <span class="editable-text">Question 2</span>
+        </button>
+        <div class="accordion-collapse">
+          <div class="accordion-body editable-text">
+            Answer for question 2
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+`,
+                script() {
+                    const root = this;
+
+                    const items = root.querySelectorAll('.accordion-item');
+
+                    items.forEach(item => {
+                        const btn = item.querySelector('.accordion-button');
+                        if (!btn) return;
+
+                        // ✅ Stop GrapesJS drag/focus issues
+                        ['mousedown', 'mouseup', 'focus'].forEach(evt =>
+                            btn.addEventListener(evt, e => e.stopPropagation())
+                        );
+                    });
+                }
+            });
             // ---------------- MEDIA BLOCKS ----------------
             const mediaBlocks = [{
                     id: 'image',
@@ -844,7 +986,8 @@
 </div>`,
                     script: function() {
                         const iframe = this.querySelector('iframe');
-                        iframe && iframe.addEventListener('mousedown', e => e.stopPropagation());
+                        iframe && iframe.addEventListener('mousedown', e => e
+                            .stopPropagation());
                     }
                 },
                 {
@@ -895,19 +1038,19 @@
     </div>
     <div class="row g-4">
       ${[1,2,3,4].map(()=>`
-                                                                                                                                                  <div class="col-6 col-lg-3">
-                                                                                                                                                    <div class="card h-100 shadow-sm border-0">
-                                                                                                                                                      <img src="https://via.placeholder.com/300x180" class="card-img-top" alt="">
-                                                                                                                                                      <div class="card-body">
-                                                                                                                                                        <h6 class="card-title editable-text">Product name</h6>
-                                                                                                                                                        <p class="card-text small text-muted editable-text">Short description.</p>
-                                                                                                                                                        <div class="d-flex justify-content-between align-items-center">
-                                                                                                                                                          <span class="fw-bold editable-text">$39</span>
-                                                                                                                                                          <button class="btn btn-sm btn-outline-primary">Add to cart</button>
-                                                                                                                                                        </div>
-                                                                                                                                                      </div>
-                                                                                                                                                    </div>
-                                                                                                                                                  </div>`).join('')}
+                                                                                                                                                                          <div class="col-6 col-lg-3">
+                                                                                                                                                                            <div class="card h-100 shadow-sm border-0">
+                                                                                                                                                                              <img src="https://via.placeholder.com/300x180" class="card-img-top" alt="">
+                                                                                                                                                                              <div class="card-body">
+                                                                                                                                                                                <h6 class="card-title editable-text">Product name</h6>
+                                                                                                                                                                                <p class="card-text small text-muted editable-text">Short description.</p>
+                                                                                                                                                                                <div class="d-flex justify-content-between align-items-center">
+                                                                                                                                                                                  <span class="fw-bold editable-text">$39</span>
+                                                                                                                                                                                  <button class="btn btn-sm btn-outline-primary">Add to cart</button>
+                                                                                                                                                                                </div>
+                                                                                                                                                                              </div>
+                                                                                                                                                                            </div>
+                                                                                                                                                                          </div>`).join('')}
     </div>
   </div>
 </section>`
@@ -926,20 +1069,20 @@
 
     <div class="row g-4">
       ${['Basic','Pro','Enterprise'].map((plan,i)=>`
-                                    <div class="col-md-4">
-                                      <div class="card h-100 shadow-sm border-0 text-center">
-                                        <div class="card-body">
-                                          <h4 class="fw-bold editable-text">${plan}</h4>
-                                          <h2 class="my-3 editable-text">$${i===0?19:i===1?49:99}</h2>
-                                          <ul class="list-unstyled mb-4">
-                                            <li class="editable-text">✔ Feature One</li>
-                                            <li class="editable-text">✔ Feature Two</li>
-                                            <li class="editable-text">✔ Feature Three</li>
-                                          </ul>
-                                          <a href="#" class="btn btn-primary editable-text">Get Started</a>
-                                        </div>
-                                      </div>
-                                    </div>`).join('')}
+                                                            <div class="col-md-4">
+                                                              <div class="card h-100 shadow-sm border-0 text-center">
+                                                                <div class="card-body">
+                                                                  <h4 class="fw-bold editable-text">${plan}</h4>
+                                                                  <h2 class="my-3 editable-text">$${i===0?19:i===1?49:99}</h2>
+                                                                  <ul class="list-unstyled mb-4">
+                                                                    <li class="editable-text">✔ Feature One</li>
+                                                                    <li class="editable-text">✔ Feature Two</li>
+                                                                    <li class="editable-text">✔ Feature Three</li>
+                                                                  </ul>
+                                                                  <a href="#" class="btn btn-primary editable-text">Get Started</a>
+                                                                </div>
+                                                              </div>
+                                                            </div>`).join('')}
     </div>
   </div>
 </section>`
@@ -1018,7 +1161,8 @@
                                 select.addEventListener(evt, e => e.stopPropagation())
                             );
                             if (this.dataset.selected) select.value = this.dataset.selected;
-                            select.addEventListener('change', e => this.dataset.selected = e.target.value);
+                            select.addEventListener('change', e => this.dataset.selected = e
+                                .target.value);
                         }
                     }
                 },
@@ -1046,7 +1190,8 @@
 
                         // Listen to changes
                         select.addEventListener('change', e => {
-                            this.dataset.selected = e.target.value; // store the selected value
+                            this.dataset.selected = e.target
+                                .value; // store the selected value
                             select.value = e.target.value; // update the visible option
                         });
                     }
@@ -1070,11 +1215,15 @@
                     script: function() {
                         const radios = this.querySelectorAll('input[type="radio"]');
                         radios.forEach(radio => {
-                            ['click', 'mousedown', 'mouseup', 'focus'].forEach(evt => radio
-                                .addEventListener(evt, e => e.stopPropagation()));
-                            if (this.dataset.selected) radio.checked = this.dataset.selected ===
+                            ['click', 'mousedown', 'mouseup', 'focus'].forEach(
+                                evt => radio
+                                .addEventListener(evt, e => e.stopPropagation())
+                            );
+                            if (this.dataset.selected) radio.checked = this.dataset
+                                .selected ===
                                 radio.value;
-                            radio.addEventListener('change', e => this.dataset.selected = radio
+                            radio.addEventListener('change', e => this.dataset
+                                .selected = radio
                                 .value);
                         });
                     }
@@ -1168,7 +1317,9 @@
                             classes: ['container'], // ✅ IMPORTANT: Bootstrap container
                             components: [{
                                 tagName: 'form',
-                                classes: ['p-4', 'shadow-sm', 'bg-light', 'rounded', 'mx-auto'],
+                                classes: ['p-4', 'shadow-sm', 'bg-light',
+                                    'rounded', 'mx-auto'
+                                ],
                                 attributes: {
                                     attributes: {
                                         style: "max-width:700px; width:100%; height:auto;"
@@ -1177,7 +1328,8 @@
                                 },
                                 components: [{
                                         tagName: 'h3',
-                                        classes: ['mb-4', 'fw-bold', 'text-center',
+                                        classes: ['mb-4', 'fw-bold',
+                                            'text-center',
                                             'editable-text'
                                         ],
                                         content: 'Contact Us'
@@ -1224,7 +1376,8 @@
                                     },
                                     {
                                         tagName: 'button',
-                                        classes: ['btn', 'btn-primary', 'w-100',
+                                        classes: ['btn', 'btn-primary',
+                                            'w-100',
                                             'editable-text'
                                         ],
                                         attributes: {
@@ -1236,9 +1389,12 @@
                                 script: function() {
                                     // Prevent GrapesJS from hijacking form events
                                     const protect = el => {
-                                        ['click', 'mousedown', 'mouseup', 'focus']
+                                        ['click', 'mousedown',
+                                            'mouseup', 'focus'
+                                        ]
                                         .forEach(evt =>
-                                            el.addEventListener(evt, e => e
+                                            el.addEventListener(evt,
+                                                e => e
                                                 .stopPropagation())
                                         );
                                     };
@@ -1251,28 +1407,35 @@
                                     const makeEditable = el => {
                                         if (el.dataset.edit) return;
                                         el.dataset.edit = '1';
-                                        el.addEventListener('dblclick', e => {
-                                            e.stopPropagation();
-                                            el.setAttribute('contenteditable',
-                                                'true');
-                                            el.focus();
-                                        });
-                                        el.addEventListener('blur', () =>
-                                            el.removeAttribute('contenteditable')
+                                        el.addEventListener('dblclick',
+                                            e => {
+                                                e.stopPropagation();
+                                                el.setAttribute(
+                                                    'contenteditable',
+                                                    'true');
+                                                el.focus();
+                                            });
+                                        el.addEventListener('blur',
+                                            () =>
+                                            el.removeAttribute(
+                                                'contenteditable')
                                         );
                                     };
 
-                                    this.querySelectorAll('.editable-text').forEach(
-                                        makeEditable);
+                                    this.querySelectorAll('.editable-text')
+                                        .forEach(
+                                            makeEditable);
 
                                     // Observe dynamic changes
-                                    const observer = new MutationObserver(() => {
-                                        this.querySelectorAll(
-                                            'input, textarea, select, option, button'
-                                        ).forEach(protect);
-                                        this.querySelectorAll('.editable-text')
-                                            .forEach(makeEditable);
-                                    });
+                                    const observer = new MutationObserver(
+                                        () => {
+                                            this.querySelectorAll(
+                                                'input, textarea, select, option, button'
+                                            ).forEach(protect);
+                                            this.querySelectorAll(
+                                                    '.editable-text')
+                                                .forEach(makeEditable);
+                                        });
 
                                     observer.observe(this, {
                                         childList: true,
@@ -1396,20 +1559,25 @@
                         stars.addEventListener('mousemove', function(e) {
                             const rect = this.getBoundingClientRect();
                             const x = e.clientX - rect.left;
-                            const starCount = Math.min(5, Math.max(1, Math.floor((x / this
+                            const starCount = Math.min(5, Math.max(1, Math.floor((
+                                x / this
                                 .offsetWidth) * 5) + 1));
-                            this.textContent = '★★★★★'.slice(0, starCount) + '☆☆☆☆☆'.slice(
-                                starCount);
+                            this.textContent = '★★★★★'.slice(0, starCount) + '☆☆☆☆☆'
+                                .slice(
+                                    starCount);
                         });
                         stars.addEventListener('mouseleave', function() {
-                            this.textContent = '★★★★★'.slice(0, current) + '☆☆☆☆☆'.slice(current);
+                            this.textContent = '★★★★★'.slice(0, current) + '☆☆☆☆☆'
+                                .slice(current);
                         });
                         stars.addEventListener('click', function(e) {
                             const rect = this.getBoundingClientRect();
                             const x = e.clientX - rect.left;
-                            current = Math.min(5, Math.max(1, Math.floor((x / this.offsetWidth) *
+                            current = Math.min(5, Math.max(1, Math.floor((x / this
+                                    .offsetWidth) *
                                 5) + 1));
-                            this.textContent = '★★★★★'.slice(0, current) + '☆☆☆☆☆'.slice(current);
+                            this.textContent = '★★★★★'.slice(0, current) + '☆☆☆☆☆'
+                                .slice(current);
                         });
                     }
                 }
@@ -1489,7 +1657,8 @@
                         el.setAttribute('contenteditable', 'true');
                         el.focus();
                     });
-                    el.addEventListener('blur', () => el.removeAttribute('contenteditable'));
+                    el.addEventListener('blur', () => el.removeAttribute(
+                        'contenteditable'));
                 });
             };
 
