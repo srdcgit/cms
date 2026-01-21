@@ -11,13 +11,13 @@ Route::get('/', function () {
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 
-
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', function () {
         return view('dashboard.index'); // recommended path
     })->name('dashboard');
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
     Route::get('/builder/create', [PageBuilderController::class, 'create'])
         ->name('builder.create');
     Route::post('/builder', [PageBuilderController::class, 'store'])
@@ -28,9 +28,23 @@ Route::middleware('auth')->group(function () {
         ->name('builder.update');
     Route::get('/builder', [PageBuilderController::class, 'index'])
         ->name('pages.index');
-    Route::delete('/builder/{id}', [PageBuilderController::class, 'destroy'])->name('builder.destroy');
+    Route::delete('/builder/{id}', [PageBuilderController::class, 'destroy'])
+        ->name('builder.destroy');
 });
+
+// Public page viewing by slug or ID
 Route::get('/page/{slug}', [PageBuilderController::class, 'view'])
     ->name('builder.page');
 Route::get('/page/id/{id}', [PageBuilderController::class, 'viewById'])
     ->name('builder.page.byId');
+
+// API endpoint for dynamic sidebar links (list of pages)
+Route::get('/api/pages', [PageBuilderController::class, 'getPages'])
+    ->name('api.pages');
+
+Route::get('/api/page-by-slug/{slug}', function ($slug) {
+    return \App\Models\Page::where('slug', $slug)
+        ->select('id', 'slug', 'title')
+        ->firstOrFail();
+});
+

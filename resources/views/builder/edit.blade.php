@@ -17,6 +17,7 @@
 
 
     <style>
+        /* ====== GENERAL STYLES ====== */
         body {
             margin: 0;
         }
@@ -24,11 +25,9 @@
         /* GrapesJS Canvas */
         #gjs {
             height: calc(100vh - 50px) !important;
-            /* Subtract top bar height */
             margin-top: 50px;
             /* Push down so top bar doesn't overlap */
         }
-
 
         .editable-text {
             cursor: text !important;
@@ -94,10 +93,54 @@
             margin-right: 0;
         }
 
-        `
-        /* ================= MOBILE FIXES ================= */
+        /* ====== SIDEBAR STYLES ====== */
+        .admin-sidebar {
+            width: 250px;
+            min-height: 100vh;
+            background-color: #1e1e2f;
+            color: #fff;
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+        }
 
-        /* Force columns to stack on mobile */
+        .admin-sidebar h5 {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .admin-sidebar ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .sidebar-link.nav-link.text-white {
+            display: block;
+            padding: 10px 15px;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: all 0.2s ease-in-out;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .sidebar-link.nav-link.text-white:hover {
+            background-color: #007bff;
+            color: #fff;
+            transform: translateX(5px);
+        }
+
+        .sidebar-link.nav-link.text-white.active {
+            background-color: #0056b3;
+            font-weight: 600;
+        }
+
+        .sidebar-link.nav-link.text-white i {
+            margin-right: 8px;
+        }
+
+        /* ====== MOBILE RESPONSIVE ====== */
         @media (max-width: 576px) {
             .row>[class*="col-"] {
                 width: 100% !important;
@@ -105,7 +148,6 @@
                 flex: 0 0 100% !important;
             }
 
-            /* Text center on mobile */
             h1,
             h2,
             h3,
@@ -116,17 +158,14 @@
                 text-align: center;
             }
 
-            /* Buttons full width */
             .btn {
                 width: 100%;
             }
 
-            /* Navbar fixes */
             .navbar-nav {
                 text-align: center;
             }
 
-            /* Sidebar layouts stack */
             .admin-layout {
                 flex-direction: column !important;
             }
@@ -140,12 +179,10 @@
                 width: 100% !important;
             }
 
-            /* Image spacing */
             img {
                 margin-bottom: 1rem;
             }
 
-            /* Reduce padding */
             section {
                 padding-top: 2rem !important;
                 padding-bottom: 2rem !important;
@@ -157,7 +194,6 @@
 
             .accordion-button::after {
                 content: '\f107';
-                /* FontAwesome arrow or use your icon */
                 display: inline-block;
                 transition: transform 0.2s ease;
             }
@@ -169,11 +205,9 @@
             .accordion-button:not(.collapsed)::after {
                 transform: rotate(180deg);
             }
-
         }
-
-        `
     </style>
+
 
     <!-- GrapesJS -->
     <script src="https://cdn.jsdelivr.net/npm/grapesjs/dist/grapes.js"></script>
@@ -367,33 +401,57 @@
             });
         }
 
+    editor.on('rte:enable', rte => {
+    if (!rte || !rte.el) return;
+
+    // Allow toolbar interaction
+    const toolbar = rte.el.querySelector('.gjs-rte-actionbar');
+    if (toolbar) {
+        ['mousedown', 'mouseup', 'click'].forEach(evt => {
+            toolbar.addEventListener(evt, e => e.stopPropagation());
+        });
+    }
+
+    // Protect text area from dragging (but NOT click)
+    ['mousedown', 'mouseup'].forEach(evt => {
+        rte.el.addEventListener(evt, e => e.stopPropagation());
+    });
+});
+
+
 
         editor.on('load', () => {
+
             const bm = editor.BlockManager;
             const dc = editor.DomComponents;
 
-            //             // ✅ STEP 1: Generate FAQ HTML FIRST
-            //             const faqItems = [1, 2, 3].map(i => `
-        //     <div class="accordion-item mb-3 border rounded-3 shadow-sm">
-        //       <h2 class="accordion-header">
-        //         <button class="accordion-button ${i > 1 ? 'collapsed' : ''}"
-        //                 type="button"
-        //                 data-bs-toggle="collapse"
-        //                 data-bs-target="#faq${i}"
-        //                 aria-expanded="${i === 1}"
-        //                 aria-controls="faq${i}">
-        //           <span class="editable-text">Question ${i}</span>
-        //         </button>
-        //       </h2>
-        //       <div id="faq${i}"
-        //            class="accordion-collapse collapse ${i === 1 ? 'show' : ''}"
-        //            data-bs-parent="#faqAccordion">
-        //         <div class="accordion-body editable-text">
-        //           Answer for question ${i}.
-        //         </div>
-        //       </div>
-        //     </div>
-        //   `).join('');
+            editor.Canvas.getBody().addEventListener('click', e => {
+                // Allow clicks inside RTE toolbar
+                if (e.target.closest('.gjs-rte-actionbar')) {
+                    return;
+                }
+
+                // Catch any editor link (sidebar, navbar, buttons) with data-href
+                const link = e.target.closest('[data-href]');
+                if (!link) return;
+
+                // Allow when Rich Text Editor is active (link editing)
+                if (editor.RichTextEditor.isActive()) return;
+
+                // Get the URL from data-href attribute
+                const href = link.getAttribute('data-href');
+                if (href && href !== '#' && href !== '') {
+                    // Open in new tab when clicked in editor
+                    e.preventDefault();
+                    e.stopPropagation();
+                    window.open(href, '_blank');
+                } else {
+                    // Block empty or invalid links
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            });
+
 
             // ----------- REMOVE DUPLICATE FORMS BLOCKS -----------
             const existingForms = bm.getAll().filter(block => block.attributes.category?.id === 'forms');
@@ -742,14 +800,14 @@
     </div>
     <div class="row g-4">
       ${[1,2,3,4].map(()=>`
-                                                                                                          <div class="col-6 col-lg-3">
-                                                                                                            <div class="card h-100 shadow-sm border-0">
-                                                                                                              <div class="card-body text-center">
-                                                                                                                <h5 class="fw-bold editable-text">Feature title</h5>
-                                                                                                                <p class="text-muted editable-text">Short description here.</p>
-                                                                                                              </div>
-                                                                                                            </div>
-                                                                                                          </div>`).join('')}
+                                                                                                                                                      <div class="col-6 col-lg-3">
+                                                                                                                                                        <div class="card h-100 shadow-sm border-0">
+                                                                                                                                                          <div class="card-body text-center">
+                                                                                                                                                            <h5 class="fw-bold editable-text">Feature title</h5>
+                                                                                                                                                            <p class="text-muted editable-text">Short description here.</p>
+                                                                                                                                                          </div>
+                                                                                                                                                        </div>
+                                                                                                                                                      </div>`).join('')}
     </div>
   </div>
 </section>`,
@@ -785,15 +843,15 @@
     </div>
     <div class="row g-4">
       ${[1,2,3].map(()=>`
-                                                                                                          <div class="col-12 col-lg-4">
-                                                                                                            <div class="card h-100 shadow-sm border-0">
-                                                                                                              <div class="card-body">
-                                                                                                                <p class="text-muted editable-text">“Amazing builder and very easy to use.”</p>
-                                                                                                                <div class="fw-bold editable-text">Customer Name</div>
-                                                                                                                <small class="text-muted editable-text">Company</small>
-                                                                                                              </div>
-                                                                                                            </div>
-                                                                                                          </div>`).join('')}
+                                                                                                                                                      <div class="col-12 col-lg-4">
+                                                                                                                                                        <div class="card h-100 shadow-sm border-0">
+                                                                                                                                                          <div class="card-body">
+                                                                                                                                                            <p class="text-muted editable-text">“Amazing builder and very easy to use.”</p>
+                                                                                                                                                            <div class="fw-bold editable-text">Customer Name</div>
+                                                                                                                                                            <small class="text-muted editable-text">Company</small>
+                                                                                                                                                          </div>
+                                                                                                                                                        </div>
+                                                                                                                                                      </div>`).join('')}
     </div>
   </div>
 </section>`,
@@ -877,24 +935,24 @@
 
     <div class="row g-4">
       ${[1,2,3,4].map(()=>`
-                                              <div class="col-6 col-md-3">
-                                                <div class="card border-0 shadow-sm h-100 text-center">
+                                                                                          <div class="col-6 col-md-3">
+                                                                                            <div class="card border-0 shadow-sm h-100 text-center">
 
-                                                  <!-- Image wrapper for ratio -->
-                                                  <div class="ratio ratio-1x1">
-                                                    <img 
-                                                      src="https://via.placeholder.com/400"
-                                                      class="img-fluid object-fit-cover rounded-top"
-                                                      alt="Team Member">
-                                                  </div>
+                                                                                              <!-- Image wrapper for ratio -->
+                                                                                              <div class="ratio ratio-1x1">
+                                                                                                <img 
+                                                                                                  src="https://via.placeholder.com/400"
+                                                                                                  class="img-fluid object-fit-cover rounded-top"
+                                                                                                  alt="Team Member">
+                                                                                              </div>
 
-                                                  <div class="card-body">
-                                                    <h6 class="fw-bold mb-1 editable-text">Member Name</h6>
-                                                    <small class="text-muted editable-text">Role / Position</small>
-                                                  </div>
+                                                                                              <div class="card-body">
+                                                                                                <h6 class="fw-bold mb-1 editable-text">Member Name</h6>
+                                                                                                <small class="text-muted editable-text">Role / Position</small>
+                                                                                              </div>
 
-                                                </div>
-                                              </div>`).join('')}
+                                                                                            </div>
+                                                                                          </div>`).join('')}
     </div>
 
   </div>
@@ -965,6 +1023,44 @@
                     });
                 }
             });
+            /*************************************************
+             * BANNER BLOCK
+             *************************************************/
+            editor.BlockManager.add('banner-section', {
+                label: 'Banner Section',
+                category: 'Sections',
+                attributes: {
+                    class: 'fa fa-image'
+                }, // icon for block panel
+                content: `
+<section class="banner-section position-relative text-center text-white" style="background:#007bff; padding:80px 20px;">
+  <div class="container">
+    <h1 class="editable-text mb-3">Your Banner Title</h1>
+    <p class="editable-text mb-4">Your catchy subtitle goes here.</p>
+    <a href="#" class="btn btn-light editable-text">Call to Action</a>
+  </div>
+</section>
+`,
+                script: function() {
+                    const root = this;
+
+                    // Make all editable text editable in editor
+                    root.querySelectorAll('.editable-text').forEach(el => {
+                        el.setAttribute('data-gjs-editable', 'true');
+                    });
+
+                    // Optional: make button clickable only live
+                    root.querySelectorAll('a').forEach(link => {
+                        link.addEventListener('click', e => {
+                            if (window.__gjsIsEditor) {
+                                e.preventDefault();
+                                e.stopImmediatePropagation();
+                            }
+                        });
+                    });
+                }
+            });
+
             // ---------------- MEDIA BLOCKS ----------------
             const mediaBlocks = [{
                     id: 'image',
@@ -1038,19 +1134,19 @@
     </div>
     <div class="row g-4">
       ${[1,2,3,4].map(()=>`
-                                                                                                                                                                          <div class="col-6 col-lg-3">
-                                                                                                                                                                            <div class="card h-100 shadow-sm border-0">
-                                                                                                                                                                              <img src="https://via.placeholder.com/300x180" class="card-img-top" alt="">
-                                                                                                                                                                              <div class="card-body">
-                                                                                                                                                                                <h6 class="card-title editable-text">Product name</h6>
-                                                                                                                                                                                <p class="card-text small text-muted editable-text">Short description.</p>
-                                                                                                                                                                                <div class="d-flex justify-content-between align-items-center">
-                                                                                                                                                                                  <span class="fw-bold editable-text">$39</span>
-                                                                                                                                                                                  <button class="btn btn-sm btn-outline-primary">Add to cart</button>
-                                                                                                                                                                                </div>
-                                                                                                                                                                              </div>
-                                                                                                                                                                            </div>
-                                                                                                                                                                          </div>`).join('')}
+                                                                                                                                                                                                                      <div class="col-6 col-lg-3">
+                                                                                                                                                                                                                        <div class="card h-100 shadow-sm border-0">
+                                                                                                                                                                                                                          <img src="https://via.placeholder.com/300x180" class="card-img-top" alt="">
+                                                                                                                                                                                                                          <div class="card-body">
+                                                                                                                                                                                                                            <h6 class="card-title editable-text">Product name</h6>
+                                                                                                                                                                                                                            <p class="card-text small text-muted editable-text">Short description.</p>
+                                                                                                                                                                                                                            <div class="d-flex justify-content-between align-items-center">
+                                                                                                                                                                                                                              <span class="fw-bold editable-text">$39</span>
+                                                                                                                                                                                                                              <button class="btn btn-sm btn-outline-primary">Add to cart</button>
+                                                                                                                                                                                                                            </div>
+                                                                                                                                                                                                                          </div>
+                                                                                                                                                                                                                        </div>
+                                                                                                                                                                                                                      </div>`).join('')}
     </div>
   </div>
 </section>`
@@ -1069,20 +1165,20 @@
 
     <div class="row g-4">
       ${['Basic','Pro','Enterprise'].map((plan,i)=>`
-                                                            <div class="col-md-4">
-                                                              <div class="card h-100 shadow-sm border-0 text-center">
-                                                                <div class="card-body">
-                                                                  <h4 class="fw-bold editable-text">${plan}</h4>
-                                                                  <h2 class="my-3 editable-text">$${i===0?19:i===1?49:99}</h2>
-                                                                  <ul class="list-unstyled mb-4">
-                                                                    <li class="editable-text">✔ Feature One</li>
-                                                                    <li class="editable-text">✔ Feature Two</li>
-                                                                    <li class="editable-text">✔ Feature Three</li>
-                                                                  </ul>
-                                                                  <a href="#" class="btn btn-primary editable-text">Get Started</a>
-                                                                </div>
-                                                              </div>
-                                                            </div>`).join('')}
+                                                                                                        <div class="col-md-4">
+                                                                                                          <div class="card h-100 shadow-sm border-0 text-center">
+                                                                                                            <div class="card-body">
+                                                                                                              <h4 class="fw-bold editable-text">${plan}</h4>
+                                                                                                              <h2 class="my-3 editable-text">$${i===0?19:i===1?49:99}</h2>
+                                                                                                              <ul class="list-unstyled mb-4">
+                                                                                                                <li class="editable-text">✔ Feature One</li>
+                                                                                                                <li class="editable-text">✔ Feature Two</li>
+                                                                                                                <li class="editable-text">✔ Feature Three</li>
+                                                                                                              </ul>
+                                                                                                              <a href="#" class="btn btn-primary editable-text">Get Started</a>
+                                                                                                            </div>
+                                                                                                          </div>
+                                                                                                        </div>`).join('')}
     </div>
   </div>
 </section>`
