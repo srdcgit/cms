@@ -48,7 +48,8 @@ class PageBuilderController extends Controller
     public function edit($id)
     {
         $page = Page::findOrFail($id);
-        return view('builder.edit', compact('page'));
+        $pages = Page::all();
+        return view('builder.edit', compact('page', 'pages'));
     }
 
     // Update page content

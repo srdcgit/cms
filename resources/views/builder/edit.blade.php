@@ -114,7 +114,7 @@
             padding-left: 0;
         }
 
-        .sidebar-link.nav-link.text-white {
+        .admin-sidebar .nav-link {
             display: block;
             padding: 10px 15px;
             color: #fff;
@@ -125,18 +125,18 @@
             font-size: 14px;
         }
 
-        .sidebar-link.nav-link.text-white:hover {
+        .admin-sidebar .nav-link:hover {
             background-color: #007bff;
             color: #fff;
             transform: translateX(5px);
         }
 
-        .sidebar-link.nav-link.text-white.active {
+        .admin-sidebar .nav-link.active {
             background-color: #0056b3;
             font-weight: 600;
         }
 
-        .sidebar-link.nav-link.text-white i {
+        .admin-sidebar .nav-link i {
             margin-right: 8px;
         }
 
@@ -334,10 +334,15 @@
                     'https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css',
                     'https://cdn.jsdelivr.net/npm/grapesjs/dist/css/grapes.min.css',
                     'https://cdn.jsdelivr.net/npm/grapesjs-preset-webpage/dist/grapesjs-preset-webpage.min.css',
+                    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
+                    'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap',
+                    'https://unpkg.com/aos@2.3.1/dist/aos.css',
                     `
-            /* ===== ADMIN LAYOUT FIX ===== */
+     /* ===== ADMIN LAYOUT FIX ===== */
             .admin-layout { display: flex; min-height: 100vh; overflow: hidden; background: #f5f6fa; }
             .admin-sidebar { width: 240px; min-height: 100vh; background: #212529; color: #fff; flex-shrink: 0; }
+            .admin-sidebar ul { list-style: none; padding-left: 0; }
+            .admin-sidebar li { list-style: none; }
             .admin-content { flex: 1; min-height: 100vh; overflow-y: auto; background: #f5f6fa; }
             .admin-navbar { position: sticky; top: 0; z-index: 10; background: #fff; }
             .admin-layout .container { max-width: 100%; }
@@ -345,6 +350,8 @@
                 ]
             }
         });
+
+        
 
         // IMPORTANT: Enable GrapesJS Panels for devices
         const panelManager = editor.Panels;
@@ -401,22 +408,8 @@
             });
         }
 
-    editor.on('rte:enable', rte => {
-    if (!rte || !rte.el) return;
-
-    // Allow toolbar interaction
-    const toolbar = rte.el.querySelector('.gjs-rte-actionbar');
-    if (toolbar) {
-        ['mousedown', 'mouseup', 'click'].forEach(evt => {
-            toolbar.addEventListener(evt, e => e.stopPropagation());
-        });
-    }
-
-    // Protect text area from dragging (but NOT click)
-    ['mousedown', 'mouseup'].forEach(evt => {
-        rte.el.addEventListener(evt, e => e.stopPropagation());
-    });
-});
+        // The default GrapesJS RTE works best without manual event interference.
+        // We've removed the custom rte:enable listener to restore Bold, Italic, Underline, and Link functionality.
 
 
 
@@ -528,7 +521,15 @@
                     content: `<blockquote class="blockquote p-3 border-start border-primary">
         <p class="mb-0 editable-text">"Quote here"</p>
       </blockquote>`
+                },
+                {
+                    id: 'sidebar-link-item',
+                    label: 'Sidebar Link',
+                    category: 'Layout',
+                    content: `<a class="nav-link text-white" href="#" style="width: 100%; display: block;">New Link</a>`
+
                 }
+
             ];
 
             // ---------------- NAVBAR / FOOTER ----------------
@@ -566,117 +567,31 @@
 
             ];
             const sidebarBlocks = [{
-                    id: 'layout-sidebar-left',
-                    label: 'Page Layout (Sidebar Left)',
+                    id: 'admin-sidebar-layout',
+                    label: 'Sidebar Layout',
                     category: 'Layout',
                     content: `
 <div class="admin-layout d-flex">
-
-  <!-- SIDEBAR LEFT -->
+  <!-- SIDEBAR -->
   <aside class="admin-sidebar bg-dark text-white p-3">
     <h5 class="mb-4">CMS Panel</h5>
-
     <ul class="nav flex-column gap-2">
-
+      @foreach ($pages as $p)
       <li>
-        <a class="nav-link text-white sidebar-link"
-           href="http://127.0.0.1:8000/page/dashboard"
-           data-page="/dashboard"
-           data-gjs-editable="false"
-           data-gjs-selectable="false"
-           data-gjs-hoverable="false"
-           data-gjs-draggable="false">
-           Dashboard
+        <a class="nav-link text-white {{ request()->route('id') == $p->id ? 'active' : '' }}"
+           href="{{ route('builder.edit', $p->id) }}"
+           target="_top">
+           {{ $p->title }}
         </a>
       </li>
-
-      <li>
-        <a class="nav-link text-white sidebar-link"
-           href="/banner"
-           data-page="/banner"
-           data-gjs-editable="false"
-           data-gjs-selectable="false"
-           data-gjs-hoverable="false"
-           data-gjs-draggable="false">
-           Banner
-        </a>
-      </li>
-
-      <li>
-        <a class="nav-link text-white sidebar-link"
-           href="/product"
-           data-page="/product"
-           data-gjs-editable="false"
-           data-gjs-selectable="false"
-           data-gjs-hoverable="false"
-           data-gjs-draggable="false">
-           Product
-        </a>
-      </li>
-
-      <li>
-        <a class="nav-link text-white sidebar-link"
-           href="/category"
-           data-page="/category"
-           data-gjs-editable="false"
-           data-gjs-selectable="false"
-           data-gjs-hoverable="false"
-           data-gjs-draggable="false">
-           Category
-        </a>
-      </li>
-
+      @endforeach
     </ul>
   </aside>
 
-  <!-- MAIN CONTENT -->
-  <div class="admin-content flex-grow-1 bg-light">
-    <header class="admin-navbar shadow-sm p-3 bg-white">
-      Admin Dashboard
-    </header>
-
-    <main class="p-4">
-      <h2>Main Content Area</h2>
-      <p>Drag tables, forms, sections, or content blocks here.</p>
-    </main>
+  <!-- DYNAMIC CONTENT AREA -->
+  <div class="admin-content flex-grow-1 p-4">
+    <!-- You can drag any components (tables, forms, etc.) here -->
   </div>
-
-</div>
-`
-                },
-
-                {
-                    id: 'layout-sidebar-right',
-                    label: 'Page Layout (Sidebar Right)',
-                    category: 'Layout',
-                    content: `
-<div class="admin-layout d-flex">
-
-  <!-- MAIN CONTENT -->
-  <div class="admin-content flex-grow-1 bg-light">
-    <header class="admin-navbar shadow-sm p-3 bg-white">
-      <span class="editable-text">Admin Dashboard</span>
-    </header>
-
-    <main class="p-4">
-      <h2 class="editable-text">Main Content Area</h2>
-      <p class="editable-text">
-        Drag tables, forms, sections, or content blocks here.
-      </p>
-    </main>
-  </div>
-
-  <!-- SIDEBAR RIGHT -->
-  <aside class="admin-sidebar bg-dark text-white p-3">
-    <h5 class="mb-4 editable-text">CMS Panel</h5>
-    <ul class="nav flex-column gap-2">
-      <li><a class="nav-link text-white sidebar-link" href="/dashboard" data-page="/dashboard" data-gjs-editable="false" data-gjs-selectable="false" data-gjs-hoverable="false" data-gjs-draggable="false"> Dashboard </a></li>
-      <li><a class="nav-link text-white editable-text" data-page="/banner" href="/banner">Banner</a></li>
-      <li><a class="nav-link text-white editable-text" data-page="/product" href="/product">Product</a></li>
-      <li><a class="nav-link text-white editable-text" data-page="/category" href="/category">Category</a></li>
-    </ul>
-  </aside>
-
 </div>
 `
                 }
@@ -729,19 +644,10 @@
             }
 
 
-            editor.BlockManager.add('layout-sidebar-left', {
-                label: 'Sidebar Left Layout',
+            editor.BlockManager.add('admin-sidebar-layout', {
+                label: 'Sidebar Layout',
                 category: 'Layout',
                 content: sidebarBlocks[0].content,
-                script: function() {
-                    initSidebar(this, '/dashboard'); // auto-load default page
-                }
-            });
-
-            editor.BlockManager.add('layout-sidebar-right', {
-                label: 'Sidebar Right Layout',
-                category: 'Layout',
-                content: sidebarBlocks[1].content,
                 script: function() {
                     initSidebar(this, '/dashboard'); // auto-load default page
                 }
@@ -800,14 +706,14 @@
     </div>
     <div class="row g-4">
       ${[1,2,3,4].map(()=>`
-                                                                                                                                                      <div class="col-6 col-lg-3">
-                                                                                                                                                        <div class="card h-100 shadow-sm border-0">
-                                                                                                                                                          <div class="card-body text-center">
-                                                                                                                                                            <h5 class="fw-bold editable-text">Feature title</h5>
-                                                                                                                                                            <p class="text-muted editable-text">Short description here.</p>
-                                                                                                                                                          </div>
-                                                                                                                                                        </div>
-                                                                                                                                                      </div>`).join('')}
+                                                                                                                                                                      <div class="col-6 col-lg-3">
+                                                                                                                                                                        <div class="card h-100 shadow-sm border-0">
+                                                                                                                                                                          <div class="card-body text-center">
+                                                                                                                                                                            <h5 class="fw-bold editable-text">Feature title</h5>
+                                                                                                                                                                            <p class="text-muted editable-text">Short description here.</p>
+                                                                                                                                                                          </div>
+                                                                                                                                                                        </div>
+                                                                                                                                                                      </div>`).join('')}
     </div>
   </div>
 </section>`,
@@ -843,15 +749,15 @@
     </div>
     <div class="row g-4">
       ${[1,2,3].map(()=>`
-                                                                                                                                                      <div class="col-12 col-lg-4">
-                                                                                                                                                        <div class="card h-100 shadow-sm border-0">
-                                                                                                                                                          <div class="card-body">
-                                                                                                                                                            <p class="text-muted editable-text">“Amazing builder and very easy to use.”</p>
-                                                                                                                                                            <div class="fw-bold editable-text">Customer Name</div>
-                                                                                                                                                            <small class="text-muted editable-text">Company</small>
-                                                                                                                                                          </div>
-                                                                                                                                                        </div>
-                                                                                                                                                      </div>`).join('')}
+                                                                                                                                                                      <div class="col-12 col-lg-4">
+                                                                                                                                                                        <div class="card h-100 shadow-sm border-0">
+                                                                                                                                                                          <div class="card-body">
+                                                                                                                                                                            <p class="text-muted editable-text">“Amazing builder and very easy to use.”</p>
+                                                                                                                                                                            <div class="fw-bold editable-text">Customer Name</div>
+                                                                                                                                                                            <small class="text-muted editable-text">Company</small>
+                                                                                                                                                                          </div>
+                                                                                                                                                                        </div>
+                                                                                                                                                                      </div>`).join('')}
     </div>
   </div>
 </section>`,
@@ -935,24 +841,24 @@
 
     <div class="row g-4">
       ${[1,2,3,4].map(()=>`
-                                                                                          <div class="col-6 col-md-3">
-                                                                                            <div class="card border-0 shadow-sm h-100 text-center">
+                                                                                                          <div class="col-6 col-md-3">
+                                                                                                            <div class="card border-0 shadow-sm h-100 text-center">
 
-                                                                                              <!-- Image wrapper for ratio -->
-                                                                                              <div class="ratio ratio-1x1">
-                                                                                                <img 
-                                                                                                  src="https://via.placeholder.com/400"
-                                                                                                  class="img-fluid object-fit-cover rounded-top"
-                                                                                                  alt="Team Member">
-                                                                                              </div>
+                                                                                                              <!-- Image wrapper for ratio -->
+                                                                                                              <div class="ratio ratio-1x1">
+                                                                                                                <img 
+                                                                                                                  src="https://via.placeholder.com/400"
+                                                                                                                  class="img-fluid object-fit-cover rounded-top"
+                                                                                                                  alt="Team Member">
+                                                                                                              </div>
 
-                                                                                              <div class="card-body">
-                                                                                                <h6 class="fw-bold mb-1 editable-text">Member Name</h6>
-                                                                                                <small class="text-muted editable-text">Role / Position</small>
-                                                                                              </div>
+                                                                                                              <div class="card-body">
+                                                                                                                <h6 class="fw-bold mb-1 editable-text">Member Name</h6>
+                                                                                                                <small class="text-muted editable-text">Role / Position</small>
+                                                                                                              </div>
 
-                                                                                            </div>
-                                                                                          </div>`).join('')}
+                                                                                                            </div>
+                                                                                                          </div>`).join('')}
     </div>
 
   </div>
@@ -1061,6 +967,7 @@
                 }
             });
 
+
             // ---------------- MEDIA BLOCKS ----------------
             const mediaBlocks = [{
                     id: 'image',
@@ -1108,16 +1015,18 @@
                     label: 'Product Card',
                     category: 'E‑commerce',
                     content: `
-<div class="card m-2 shadow" style="width:18rem;">
-  <img src="https://via.placeholder.com/300x150" class="card-img-top" alt="">
-  <div class="card-body">
-    <h5 class="card-title editable-text">Product Title</h5>
-    <p class="card-text editable-text">Product description goes here.</p>
-    <div class="d-flex justify-content-between align-items-center mb-2">
-      <span class="fw-bold editable-text">$49</span>
-      <span class="text-muted small editable-text">In stock</span>
+<div class="card border-0 shadow-soft rounded-4 hover-lift overflow-hidden m-2" style="width:18rem;">
+  <div class="ratio ratio-4x3">
+     <img src="https://via.placeholder.com/400x300/f8fafc/64748b?text=Product+Image" class="card-img-top object-fit-cover" alt="">
+  </div>
+  <div class="card-body p-4">
+    <div class="text-primary small fw-semibold mb-2 text-uppercase tracking-widest">Category</div>
+    <h5 class="fw-bold text-dark editable-text mb-2">Product Title</h5>
+    <p class="card-text text-muted small editable-text mb-4">A brief catchphrase about the product features.</p>
+    <div class="d-flex justify-content-between align-items-center">
+      <span class="fs-4 fw-bold text-dark editable-text">$49.00</span>
+      <button class="btn btn-dark rounded-pill px-4 btn-sm">Add to Cart</button>
     </div>
-    <button class="btn btn-success w-100">Buy Now</button>
   </div>
 </div>`
                 },
@@ -1134,19 +1043,19 @@
     </div>
     <div class="row g-4">
       ${[1,2,3,4].map(()=>`
-                                                                                                                                                                                                                      <div class="col-6 col-lg-3">
-                                                                                                                                                                                                                        <div class="card h-100 shadow-sm border-0">
-                                                                                                                                                                                                                          <img src="https://via.placeholder.com/300x180" class="card-img-top" alt="">
-                                                                                                                                                                                                                          <div class="card-body">
-                                                                                                                                                                                                                            <h6 class="card-title editable-text">Product name</h6>
-                                                                                                                                                                                                                            <p class="card-text small text-muted editable-text">Short description.</p>
-                                                                                                                                                                                                                            <div class="d-flex justify-content-between align-items-center">
-                                                                                                                                                                                                                              <span class="fw-bold editable-text">$39</span>
-                                                                                                                                                                                                                              <button class="btn btn-sm btn-outline-primary">Add to cart</button>
-                                                                                                                                                                                                                            </div>
-                                                                                                                                                                                                                          </div>
-                                                                                                                                                                                                                        </div>
-                                                                                                                                                                                                                      </div>`).join('')}
+          <div class="col-6 col-lg-3">
+            <div class="card h-100 shadow-soft border-0 rounded-4 overflow-hidden">
+              <img src="https://via.placeholder.com/300x180" class="card-img-top" alt="">
+              <div class="card-body">
+                <h6 class="card-title editable-text fw-bold">Product name</h6>
+                <p class="card-text small text-muted editable-text">Short description.</p>
+                <div class="d-flex justify-content-between align-items-center">
+                  <span class="fw-bold editable-text">$39</span>
+                  <button class="btn btn-sm btn-outline-primary rounded-pill">Add to cart</button>
+                </div>
+              </div>
+            </div>
+          </div>`).join('')}
     </div>
   </div>
 </section>`
@@ -1159,34 +1068,31 @@
 <section class="py-5 bg-light">
   <div class="container">
     <div class="text-center mb-5">
-      <h2 class="fw-bold editable-text">Simple Pricing</h2>
-      <p class="text-muted editable-text">Choose the plan that fits you</p>
+      <h2 class="fw-bold display-6 editable-text">Simple Pricing</h2>
+      <p class="text-muted editable-text">Choose the plan that fits you best.</p>
     </div>
-
     <div class="row g-4">
-      ${['Basic','Pro','Enterprise'].map((plan,i)=>`
-                                                                                                        <div class="col-md-4">
-                                                                                                          <div class="card h-100 shadow-sm border-0 text-center">
-                                                                                                            <div class="card-body">
-                                                                                                              <h4 class="fw-bold editable-text">${plan}</h4>
-                                                                                                              <h2 class="my-3 editable-text">$${i===0?19:i===1?49:99}</h2>
-                                                                                                              <ul class="list-unstyled mb-4">
-                                                                                                                <li class="editable-text">✔ Feature One</li>
-                                                                                                                <li class="editable-text">✔ Feature Two</li>
-                                                                                                                <li class="editable-text">✔ Feature Three</li>
-                                                                                                              </ul>
-                                                                                                              <a href="#" class="btn btn-primary editable-text">Get Started</a>
-                                                                                                            </div>
-                                                                                                          </div>
-                                                                                                        </div>`).join('')}
+      ${['Starter','Pro','Business'].map((plan,i)=>`
+          <div class="col-md-4">
+            <div class="card h-100 shadow-soft border-0 text-center rounded-4 ${i===1?'border border-primary bg-white':'bg-light'}">
+              <div class="card-body p-4">
+                <h4 class="fw-bold editable-text">${plan}</h4>
+                <h2 class="my-4 fw-bold editable-text">$${i===0?19:i===1?49:99}<span class="fs-6 text-muted fw-normal">/mo</span></h2>
+                <ul class="list-unstyled mb-5 text-muted small">
+                  <li class="mb-2 editable-text">✔ Unlimited Projects</li>
+                  <li class="mb-2 editable-text">✔ Essential Analytics</li>
+                  <li class="mb-0 editable-text">✔ 24/7 Support</li>
+                </ul>
+                <a href="#" class="btn ${i===1?'btn-primary':'btn-outline-dark'} w-100 rounded-pill hover-lift editable-text">Get Started</a>
+              </div>
+            </div>
+          </div>`).join('')}
     </div>
   </div>
 </section>`
                 }
-
             ];
 
-            // ---------------- BACKGROUND / HERO IMAGE SECTIONS ----------------
             const backgroundBlocks = [{
                 id: 'bg-section',
                 label: 'Background Section',
@@ -1205,7 +1111,7 @@
 </section>`
             }];
 
-            // ----------- FORMS BLOCKS -----------
+           // ----------- FORMS BLOCKS -----------
             const formBlocks = [{
                     id: 'form-wrapper',
                     label: 'Form',
@@ -1680,8 +1586,6 @@
             ];
 
 
-
-            // ---------------- REGISTER ALL BLOCKS ----------------
             const allBlocks = [
                 ...layoutBlocks,
                 ...contentBlocks,
@@ -1693,7 +1597,6 @@
                 ...backgroundBlocks,
                 ...formBlocks
             ];
-
 
             allBlocks.forEach(b => {
                 bm.add(b.id, {
@@ -1709,86 +1612,39 @@
                 });
             });
 
-            // Add device switch commands
-            editor.Commands.add('set-device-desktop', {
-                run: function(editor) {
-                    editor.setDevice('Desktop');
-                }
-            });
-            editor.Commands.add('set-device-tablet', {
-                run: function(editor) {
-                    editor.setDevice('Tablet');
-                }
-            });
-            editor.Commands.add('set-device-mobile', {
-                run: function(editor) {
-                    editor.setDevice('Mobile');
-                }
-            });
-
-            // Load saved data
             @if (!empty($page->gjs_json))
-                // Load saved GrapesJS project
                 editor.loadProjectData(@json($page->gjs_json));
             @endif
 
-            // Always apply the saved CSS
             @if (!empty($page->css))
                 editor.setStyle(`{!! $page->css !!}`);
             @endif
 
-            @if (!empty($page->js))
-                editor.setComponents(editor.getHtml());
-                editor.setJs(`{!! $page->js !!}`);
-            @endif
-
-            // ---------------- GLOBAL EDITABLE TEXT HELPER ----------------
-            const makeGlobalEditable = () => {
-                const rootEl = editor.Canvas.getBody();
-                rootEl.querySelectorAll('.editable-text').forEach(el => {
-                    if (el.getAttribute('data-edit-listener')) return;
-                    el.setAttribute('data-edit-listener', '1');
-                    el.addEventListener('dblclick', e => {
-                        e.stopPropagation();
-                        el.setAttribute('contenteditable', 'true');
-                        el.focus();
+            // Ensure any element with 'editable-text' is recognized as editable by GrapesJS natively
+            editor.on('component:create', component => {
+                if (component.getAttributes().class?.includes('editable-text')) {
+                    component.set({
+                        editable: true,
+                        stylable: true
                     });
-                    el.addEventListener('blur', () => el.removeAttribute(
-                        'contenteditable'));
-                });
-            };
-
-            const canvasEl = editor.Canvas.getBody();
-            const observer = new MutationObserver(makeGlobalEditable);
-            observer.observe(canvasEl, {
-                childList: true,
-                subtree: true
+                }
             });
-            makeGlobalEditable();
 
-            // Prevent form submit inside editor
-            canvasEl.addEventListener('submit', e => e.preventDefault(), true);
         });
-        // ---------------- FIX FILE INPUTS FOR EDITING EXISTING PAGES ----------------
+
         function fixFileInputs() {
             const fileInputs = editor.Canvas.getBody().querySelectorAll('input[type="file"]');
-
             fileInputs.forEach(input => {
                 input.addEventListener('click', e => {
-                    e.preventDefault(); // prevent GrapesJS hijack
-
-                    // Create a temporary input outside canvas
+                    e.preventDefault();
                     const tempInput = document.createElement('input');
                     tempInput.type = 'file';
                     tempInput.style.display = 'none';
                     document.body.appendChild(tempInput);
-
                     tempInput.addEventListener('change', function(ev) {
-                        // Copy the file(s) back to original input
                         input.files = ev.target.files;
                         document.body.removeChild(tempInput);
                     });
-
                     tempInput.click();
                 });
             });
@@ -1797,25 +1653,19 @@
         function runBlockScripts(components) {
             components.forEach(comp => {
                 const script = comp.get('script');
-                if (script && typeof script === 'function') {
-                    script.call(comp);
-                }
-                // Recursively run scripts for nested components
+                if (script && typeof script === 'function') script.call(comp);
                 const children = comp.get('components');
                 if (children && children.length) runBlockScripts(children.models);
             });
         }
 
-
-
-        // BEFORE SUBMIT: put GrapesJS data into hidden inputs
         document.getElementById('saveForm').addEventListener('submit', function(e) {
             document.getElementById('html').value = editor.getHtml();
             document.getElementById('css').value = editor.getCss();
             document.getElementById('js').value = editor.getJs();
             document.getElementById('gjs_json').value = JSON.stringify(editor.getProjectData());
-            // let the form submit to PageBuilderController@update
         });
     </script>
-
 </body>
+
+</html>
