@@ -338,14 +338,97 @@
                     'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap',
                     'https://unpkg.com/aos@2.3.1/dist/aos.css',
                     `
-     /* ===== ADMIN LAYOUT FIX ===== */
-            .admin-layout { display: flex; min-height: 100vh; overflow: hidden; background: #f5f6fa; }
-            .admin-sidebar { width: 240px; min-height: 100vh; background: #212529; color: #fff; flex-shrink: 0; }
-            .admin-sidebar ul { list-style: none; padding-left: 0; }
-            .admin-sidebar li { list-style: none; }
-            .admin-content { flex: 1; min-height: 100vh; overflow-y: auto; background: #f5f6fa; }
-            .admin-navbar { position: sticky; top: 0; z-index: 10; background: #fff; }
-            .admin-layout .container { max-width: 100%; }
+            /* ====== ADMIN LAYOUT SYSTEM ====== */
+            .admin-layout { 
+                display: flex; 
+                min-height: 100vh; 
+                background-color: #f8f9fa; 
+                transition: background-color 0.3s ease;
+            }
+            .admin-sidebar { 
+                width: 250px; 
+                background-color: #2d3436; 
+                color: #ffffff; 
+                transition: background-color 0.3s ease;
+            }
+            .admin-content { flex: 1; padding: 0; transition: background-color 0.3s ease; }
+            
+            /* Navbar Default */
+            .vimeo-navbar {
+                background-color: #ffffff;
+                transition: background-color 0.3s ease;
+            }
+            
+            /* Footer Default */
+            .pro-footer {
+                background-color: #000000;
+                color: #ffffff;
+                transition: background-color 0.3s ease;
+            }
+
+            /* Sections Default (Unlocked) */
+            .hero-section { background-color: #f8f9fa; transition: all 0.3s ease; }
+            .features-section { background-color: #ffffff; transition: all 0.3s ease; }
+            .cta-section { background-color: #007bff; color: #ffffff; transition: all 0.3s ease; }
+            .testimonials-section { background-color: #f8f9fa; transition: all 0.3s ease; }
+            .faq-section { background-color: #f8fafc; transition: all 0.3s ease; }
+            .banner-section { background-color: #007bff; color: #ffffff; transition: all 0.3s ease; }
+            .stats-section { background: linear-gradient(135deg, #0f2027, #203a43, #2c5364); transition: all 0.3s ease; }
+            .team-section { background-color: #f8f9fa; transition: all 0.3s ease; }
+
+            .navbar-icons {
+                display: flex !important;
+                flex-direction: row !important;
+                align-items: center !important;
+                gap: 12px !important;
+                padding: 0 10px;
+            }
+            .action-icon {
+                color: #2d3748 !important;
+                text-decoration: none !important;
+                width: 34px;
+                height: 34px;
+                display: inline-flex !important;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.2s;
+                border-radius: 8px;
+                background: rgba(0,0,0,0.03);
+            }
+            .action-icon:hover {
+                background: rgba(0, 173, 239, 0.1) !important;
+                color: #00adef !important;
+                transform: translateY(-1px);
+            }
+            .action-icon i { font-size: 16px; }
+
+            /* Search Overlay */
+            .search-overlay {
+                position: fixed !important;
+                top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(255,255,255,0.98);
+                backdrop-filter: blur(10px);
+                z-index: 10000;
+                display: none;
+                align-items: center;
+                justify-content: center;
+                flex-direction: column;
+            }
+            .search-input {
+                width: 50%;
+                border: none;
+                border-bottom: 2px solid #00adef;
+                font-size: 32px;
+                outline: none;
+                padding: 10px;
+                text-align: center;
+                background: transparent;
+            }
+            .close-search {
+                position: absolute;
+                top: 30px; right: 40px;
+                font-size: 40px; color: #666; cursor: pointer;
+            }
             `
                 ]
             }
@@ -417,6 +500,91 @@
 
             const bm = editor.BlockManager;
             const dc = editor.DomComponents;
+            // Explicitly define link component to ensure traits like Target and Title work correctly
+            dc.addType('link', {
+                model: {
+                    defaults: {
+                        traits: [
+                            {
+                                type: 'select',
+                                label: 'Link Type',
+                                name: 'link_type',
+                                options: [
+                                    { value: 'url', name: 'Custom URL' },
+                                    { value: 'page', name: 'Internal Page' },
+                                ],
+                            },
+                            {
+                                type: 'text',
+                                label: 'Href',
+                                name: 'href',
+                            },
+                            {
+                                type: 'select',
+                                label: 'Select Page',
+                                name: 'internal_page',
+                                options: [], // Will be populated dynamically
+                            },
+                            {
+                                type: 'text',
+                                label: 'Title',
+                                name: 'title',
+                            },
+                            {
+                                type: 'select',
+                                label: 'Target',
+                                name: 'target',
+                                options: [
+                                    { value: '_self', name: 'This window' },
+                                    { value: '_blank', name: 'New window' },
+                                    { value: '_top', name: 'Top window' },
+                                ]
+                            }
+                        ],
+                    },
+                    init() {
+                        this.on('change:link_type', this.handleLinkTypeChange);
+                        this.on('change:internal_page', this.handlePageChange);
+                        this.handleLinkTypeChange();
+                        this.updatePageOptions();
+                    },
+                    handleLinkTypeChange() {
+                        const type = this.get('link_type') || 'url';
+                        const traits = this.get('traits');
+                        const hrefTrait = traits.get('href');
+                        const pageTrait = traits.get('internal_page');
+
+                        if (type === 'page') {
+                            hrefTrait && hrefTrait.set('attributes', { style: 'display:none' });
+                            pageTrait && pageTrait.set('attributes', { style: 'display:block' });
+                        } else {
+                            hrefTrait && hrefTrait.set('attributes', { style: 'display:block' });
+                            pageTrait && pageTrait.set('attributes', { style: 'display:none' });
+                        }
+                    },
+                    handlePageChange() {
+                        const slug = this.get('internal_page');
+                        if (slug) {
+                            this.set('href', `/page/${slug}`);
+                        }
+                    },
+                    async updatePageOptions() {
+                        try {
+                            const res = await fetch('/api/pages');
+                            const pages = await res.json();
+                            const options = pages.map(p => ({ value: p.slug, name: p.title }));
+                            const traits = this.get('traits');
+                            const pageTrait = traits.get('internal_page');
+                            if (pageTrait) {
+                                pageTrait.set('options', [{ value: '', name: 'Select a page...' }, ...options]);
+                                // Refresh traits UI if needed (GrapesJS handle this usually)
+                            }
+                        } catch (e) {
+                            console.error('Failed to fetch pages', e);
+                        }
+                    }
+                },
+            });
 
             editor.Canvas.getBody().addEventListener('click', e => {
                 // Allow clicks inside RTE toolbar
@@ -424,22 +592,33 @@
                     return;
                 }
 
-                // Catch any editor link (sidebar, navbar, buttons) with data-href
-                const link = e.target.closest('[data-href]');
+                // Catch any editor link (sidebar, navbar, buttons)
+                const link = e.target.closest('a, [data-href]');
                 if (!link) return;
 
                 // Allow when Rich Text Editor is active (link editing)
                 if (editor.RichTextEditor.isActive()) return;
 
-                // Get the URL from data-href attribute
-                const href = link.getAttribute('data-href');
+                // Get the URL and target
+                const href = link.getAttribute('href') || link.getAttribute('data-href');
+                const target = link.getAttribute('target') || '_self';
+
                 if (href && href !== '#' && href !== '') {
-                    // Open in new tab when clicked in editor
                     e.preventDefault();
                     e.stopPropagation();
-                    window.open(href, '_blank');
+                    
+                    // Always open in new window if it's _blank, otherwise handle accordingly
+                    if (target === '_blank') {
+                        window.open(href, '_blank');
+                    } else if (target === '_top') {
+                        window.top.location.href = href;
+                    } else {
+                        // For 'This window' (_self), we usually don't want to navigate the editor itself
+                        // but if the user insists, we could open in a new tab anyway as a safety measure
+                        // or just do nothing. Given the user's request, they want it to "work".
+                        window.open(href, '_blank'); 
+                    }
                 } else {
-                    // Block empty or invalid links
                     e.preventDefault();
                     e.stopPropagation();
                 }
@@ -573,13 +752,13 @@
                     content: `
 <div class="admin-layout d-flex">
   <!-- SIDEBAR -->
-  <aside class="admin-sidebar bg-dark text-white p-3">
+  <aside class="admin-sidebar p-3">
     <h5 class="mb-4">CMS Panel</h5>
     <ul class="nav flex-column gap-2">
       @foreach ($pages as $p)
       <li>
-        <a class="nav-link text-white {{ request()->route('id') == $p->id ? 'active' : '' }}"
-           href="{{ route('builder.edit', $p->id) }}"
+        <a class="nav-link text-white {{ request()->is('page/' . $p->slug) ? 'active' : '' }}"
+           href="{{ url('/page/' . $p->slug) }}"
            target="_top">
            {{ $p->title }}
         </a>
@@ -659,7 +838,7 @@
                     label: 'Hero Section',
                     category: 'Sections',
                     content: `
-<section class="py-5 bg-light hero-section">
+<section class="py-5 hero-section">
   <div class="container">
    <div class="row align-items-center">
 
@@ -698,7 +877,7 @@
                     label: 'Features Grid',
                     category: 'Sections',
                     content: `
-<section class="py-5 bg-white">
+<section class="py-5 features-section">
   <div class="container">
     <div class="text-center mb-5">
       <h2 class="fw-bold editable-text">Why choose our builder?</h2>
@@ -726,7 +905,7 @@
                     label: 'Call To Action',
                     category: 'Sections',
                     content: `
-<section class="py-5 bg-primary text-white text-center">
+<section class="py-5 cta-section text-center">
   <div class="container">
     <h2 class="fw-bold editable-text">Ready to build your next website?</h2>
     <p class="mb-4 editable-text">Start for free and upgrade anytime.</p>
@@ -742,7 +921,7 @@
                     label: 'Testimonials',
                     category: 'Sections',
                     content: `
-<section class="py-5 bg-light">
+<section class="py-5 testimonials-section">
   <div class="container">
     <div class="text-center mb-5">
       <h2 class="fw-bold editable-text">What customers say</h2>
@@ -771,7 +950,7 @@
                     label: 'Stats / Counters (Pro)',
                     category: 'Sections',
                     content: `
-<section class="stats-section py-5" style="background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);">
+<section class="stats-section py-5">
   <div class="container">
     
     <!-- Section Heading -->
@@ -828,7 +1007,7 @@
                     label: 'Team Section (Pro)',
                     category: 'Sections',
                     content: `
-<section class="py-5 bg-light">
+<section class="py-5 team-section">
   <div class="container">
 
     <!-- Heading -->
@@ -876,7 +1055,7 @@
                 category: 'Sections',
 
                 content: `
-<section class="py-5" style="background:#f8fafc;">
+<section class="py-5 faq-section">
   <div class="container">
     <div class="text-center mb-5">
       <h2 class="fw-bold editable-text">Frequently Asked Questions</h2>
@@ -939,7 +1118,7 @@
                     class: 'fa fa-image'
                 }, // icon for block panel
                 content: `
-<section class="banner-section position-relative text-center text-white" style="background:#007bff; padding:80px 20px;">
+<section class="banner-section position-relative text-center" style="padding:80px 20px;">
   <div class="container">
     <h1 class="editable-text mb-3">Your Banner Title</h1>
     <p class="editable-text mb-4">Your catchy subtitle goes here.</p>
@@ -1586,6 +1765,249 @@
             ];
 
 
+            const iconBlocks = [
+                {
+                    id: 'icon-user',
+                    label: 'Profile Icon',
+                    category: 'Icons',
+                    content: `
+                    <a href="#" class="action-icon" title="Profile">
+                        <i class="fa fa-user fs-5"></i>
+                    </a>`
+                },
+                {
+                    id: 'icon-bell',
+                    label: 'Bell Icon',
+                    category: 'Icons',
+                    content: `
+                    <a href="#" class="action-icon position-relative" title="Notifications">
+                        <i class="fa fa-bell fs-5"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" style="width:8px;height:8px;"></span>
+                    </a>`
+                },
+                {
+                    id: 'icon-settings',
+                    label: 'Settings Icon',
+                    category: 'Icons',
+                    content: `
+                    <a href="#" class="action-icon" title="Settings">
+                        <i class="fa fa-cog fs-5"></i>
+                    </a>`
+                },
+                {
+                    id: 'icon-search',
+                    label: 'Search Icon',
+                    category: 'Icons',
+                    content: `
+                    <a href="#" class="action-icon" title="Search">
+                        <i class="fa fa-search fs-5"></i>
+                    </a>`
+                },
+                {
+                    id: 'navbar-action-group',
+                    label: 'Navbar Icons Group',
+                    category: 'Icons',
+                    content: `
+                    <div class="navbar-icons ms-auto position-relative">
+                        <!-- Search -->
+                        <div class="action-wrapper">
+                            <a href="javascript:void(0)" class="action-icon search-trigger"><i class="fa fa-search fs-5"></i></a>
+                        </div>
+                        
+                        <!-- Notifications -->
+                        <div class="action-wrapper position-relative">
+                            <a href="javascript:void(0)" class="action-icon notification-trigger">
+                                <i class="fa fa-bell fs-5"></i>
+                                <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
+                            </a>
+                            <div class="icon-dropdown notification-menu">
+                                <h6 class="fw-bold mb-3">Notifications</h6>
+                                <div class="dropdown-item-custom">🚀 Welcome to your new CMS!</div>
+                                <div class="dropdown-item-custom">🔔 New page "Services" created.</div>
+                                <hr>
+                                <div class="text-center small"><a href="#">View All</a></div>
+                            </div>
+                        </div>
+
+                        <!-- Profile -->
+                        <div class="action-wrapper position-relative">
+                            <a href="javascript:void(0)" class="action-icon profile-trigger"><i class="fa fa-user fs-5"></i></a>
+                            <div class="icon-dropdown profile-menu">
+                                <h6 class="fw-bold mb-3">User Account</h6>
+                                <a href="#" class="dropdown-item-custom"><i class="fa fa-user-circle"></i> My Profile</a>
+                                <a href="#" class="dropdown-item-custom"><i class="fa fa-cog"></i> Settings</a>
+                                <hr>
+                                <a href="#" class="dropdown-item-custom text-danger"><i class="fa fa-sign-out"></i> Logout</a>
+                            </div>
+                        </div>
+
+                        <!-- Global Search Overlay -->
+                        <div class="search-overlay">
+                            <span class="close-search">&times;</span>
+                            <input type="text" class="search-input" placeholder="Type to search website...">
+                            <p class="mt-3 text-muted">Press ESC to close</p>
+                        </div>
+                    </div>`,
+                    script: function() {
+                        const root = this;
+                        
+                        // Toggle Dropdowns
+                        const setupDropdown = (triggerSelector, menuSelector) => {
+                            const trigger = root.querySelector(triggerSelector);
+                            const menu = root.querySelector(menuSelector);
+                            if (!trigger || !menu) return;
+
+                            trigger.addEventListener('click', (e) => {
+                                e.stopPropagation();
+                                const isOpen = menu.classList.contains('show');
+                                root.querySelectorAll('.icon-dropdown').forEach(d => d.classList.remove('show'));
+                                if (!isOpen) menu.classList.add('show');
+                            });
+                        };
+
+                        setupDropdown('.notification-trigger', '.notification-menu');
+                        setupDropdown('.profile-trigger', '.profile-menu');
+
+                        // Search Overlay
+                        const searchTrigger = root.querySelector('.search-trigger');
+                        const searchOverlay = root.querySelector('.search-overlay');
+                        const closeSearch = root.querySelector('.close-search');
+                        const searchInput = root.querySelector('.search-input');
+
+                        if (searchTrigger && searchOverlay) {
+                            searchTrigger.addEventListener('click', () => {
+                                searchOverlay.classList.add('show');
+                                setTimeout(() => searchInput.focus(), 100);
+                            });
+                            closeSearch.addEventListener('click', () => searchOverlay.classList.remove('show'));
+                        }
+
+                        // Close everything when clicking outside
+                        document.addEventListener('click', () => {
+                            root.querySelectorAll('.icon-dropdown').forEach(d => d.classList.remove('show'));
+                        });
+                        
+                        document.addEventListener('keydown', (e) => {
+                            if (e.key === 'Escape' && searchOverlay) searchOverlay.classList.remove('show');
+                        });
+                    }
+                }
+            ];
+
+            const professionalBlocks = [
+                {
+                    id: 'navbar-pro-dynamic',
+                    label: 'Vimeo Style Pro Navbar',
+                    category: 'Layout',
+                    content: `
+                    <nav class="vimeo-navbar" style="display: flex !important; flex-direction: row !important; align-items: center !important; justify-content: space-between !important; padding: 15px 40px; width: 100% !important; min-height: 70px !important; box-sizing: border-box !important;">
+                        <!-- Logo -->
+                        <div style="display: flex !important; align-items: center !important;">
+                            <a href="#" style="font-size: 26px; font-weight: 900; text-decoration: none; letter-spacing: -1px; color: inherit;">vimeo</a>
+                        </div>
+
+                        <!-- Links Container (Strictly Horizontal) -->
+                        <ul class="navbar-nav" style="display: flex !important; flex-direction: row !important; align-items: center !important; gap: 30px !important; list-style: none !important; margin: 0 !important; padding: 0 !important; color: inherit;">
+                            <li class="nav-item"><a href="#" style="text-decoration: none; font-size: 15px; font-weight: 500; color: inherit;">Products</a></li>
+                            <li class="nav-item"><a href="#" style="text-decoration: none; font-size: 15px; font-weight: 500; color: inherit;">Solutions</a></li>
+                            <li class="nav-item"><a href="#" style="text-decoration: none; font-size: 15px; font-weight: 500; color: inherit;">Pricing</a></li>
+                        </ul>
+
+                        <!-- Right Actions -->
+                        <div style="display: flex !important; flex-direction: row !important; align-items: center !important; gap: 20px !important; color: inherit;">
+                            <a href="#" style="text-decoration: none; font-size: 14px; font-weight: 600; color: inherit;">Contact sales</a>
+                            <a href="#" style="background: #00adef; color: #fff; padding: 10px 24px; border-radius: 30px; text-decoration: none; font-weight: 700; font-size: 14px; display: inline-flex !important; align-items: center !important; gap: 8px !important;">Join <i class="fa fa-arrow-right"></i></a>
+                            
+                            <!-- Static Professional Icons -->
+                            <div class="navbar-icons" style="display: flex !important; flex-direction: row !important; align-items: center !important; gap: 10px !important; border-left: 1px solid rgba(0,0,0,0.1) !important; padding-left: 15px !important; margin-left: 5px !important; color: inherit;">
+                                <div class="action-wrapper"><a href="javascript:void(0)" class="action-icon search-trigger" style="color: inherit;"><i class="fa fa-search"></i></a></div>
+                                <div class="action-wrapper"><a href="javascript:void(0)" class="action-icon notification-trigger" style="color: inherit;"><i class="fa fa-bell"></i></a></div>
+                                <div class="action-wrapper"><a href="javascript:void(0)" class="action-icon profile-trigger" style="color: inherit;"><i class="fa fa-user-circle"></i></a></div>
+                            </div>
+                        </div>
+
+                        <!-- Search Box -->
+                        <div class="search-overlay" style="display:none; position: fixed !important; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.98); z-index: 99999; display:none; align-items: center; justify-content: center; flex-direction: column;">
+                            <span class="close-search" style="position: absolute; top: 30px; right: 40px; font-size: 40px; cursor: pointer; color: #333;">&times;</span>
+                            <div style="width: 100%; text-align: center;">
+                                <input type="text" class="search-input" placeholder="Search content..." style="width: 60%; border: none; border-bottom: 3px solid #00adef; font-size: 3rem; outline: none; padding: 15px; text-align: center; background: transparent;">
+                            </div>
+                        </div>
+                    </nav>`,
+                    script: function() {
+                        const root = this;
+                        const sT = root.querySelector('.search-trigger');
+                        const sO = root.querySelector('.search-overlay');
+                        const sC = root.querySelector('.close-search');
+                        if(sT && sO) {
+                            sT.addEventListener('click', (e) => { e.preventDefault(); sO.style.display = 'flex'; });
+                            sC && sC.addEventListener('click', () => sO.style.display = 'none');
+                        }
+                    }
+                },
+                {
+                    id: 'footer-pro-multi',
+                    label: 'Premium Professional Footer',
+                    category: 'Layout',
+                    content: `
+                    <footer class="pro-footer" style="padding: 80px 40px 40px; font-family: 'Helvetica', 'Arial', sans-serif;">
+                        <!-- Top Newsletter Section -->
+                        <div style="text-align: center; margin-bottom: 80px; color: inherit;">
+                            <h2 style="font-size: 48px; font-weight: 300; margin-bottom: 10px; letter-spacing: -1px; color: inherit;">Are you on <i style="font-family: serif; color: inherit;">the list?</i></h2>
+                            <p style="font-size: 14px; margin-bottom: 30px; color: inherit; opacity: 0.7;">Join to get exclusive offers & discounts</p>
+                            <div style="display: flex; justify-content: center; gap: 10px; max-width: 500px; margin: 0 auto;">
+                                <input type="email" placeholder="Email*" style="flex: 1; background: transparent; border: 1px solid currentColor; padding: 10px 15px; color: inherit; font-size: 14px; outline: none;">
+                                <button style="background: currentColor; filter: invert(1); border: none; padding: 10px 40px; font-weight: 600; cursor: pointer;">Join</button>
+                            </div>
+                        </div>
+
+                        <!-- Middle Columns Section -->
+                        <div style="display: flex; justify-content: space-between; gap: 40px; flex-wrap: wrap; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 60px; margin-bottom: 60px; color: inherit;">
+                            <!-- Column 1 -->
+                            <div style="flex: 1; min-width: 150px; color: inherit;">
+                                <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 25px; text-transform: uppercase; color: inherit;">Shop</h4>
+                                <ul style="list-style: none; padding: 0; margin: 0; color: inherit;">
+                                    <li style="margin-bottom: 12px;"><a href="#" style="text-decoration: none; font-size: 13px; color: inherit; opacity: 0.7;">All Products</a></li>
+                                    <li style="margin-bottom: 12px;"><a href="#" style="text-decoration: none; font-size: 13px; color: inherit; opacity: 0.7;">Best Sellers</a></li>
+                                    <li style="margin-bottom: 12px;"><a href="#" style="text-decoration: none; font-size: 13px; color: inherit; opacity: 0.7;">New Arrivals</a></li>
+                                </ul>
+                            </div>
+                            <!-- Column 2 -->
+                            <div style="flex: 1; min-width: 150px; color: inherit;">
+                                <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 25px; text-transform: uppercase; color: inherit;">Our Store</h4>
+                                <p style="font-size: 13px; line-height: 1.6; color: inherit; opacity: 0.7;">500 Terry Francois St.<br>San Francisco, CA 94158</p>
+                                <p style="font-size: 13px; margin-top: 15px; color: inherit; opacity: 0.7;">Mon - Fri: 9am - 9pm<br>Sat - Sun: 10am - 8pm</p>
+                            </div>
+                            <!-- Column 3 -->
+                            <div style="flex: 1; min-width: 150px; color: inherit;">
+                                <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 25px; text-transform: uppercase; color: inherit;">Policy</h4>
+                                <ul style="list-style: none; padding: 0; margin: 0; color: inherit;">
+                                    <li style="margin-bottom: 12px;"><a href="#" style="text-decoration: none; font-size: 13px; color: inherit; opacity: 0.7;">Shipping & Returns</a></li>
+                                    <li style="margin-bottom: 12px;"><a href="#" style="text-decoration: none; font-size: 13px; color: inherit; opacity: 0.7;">Store Policy</a></li>
+                                    <li style="margin-bottom: 12px;"><a href="#" style="text-decoration: none; font-size: 13px; color: inherit; opacity: 0.7;">FAQ</a></li>
+                                </ul>
+                            </div>
+                            <!-- Column 4 -->
+                            <div style="flex: 1; min-width: 150px; color: inherit;">
+                                <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 25px; text-transform: uppercase; color: inherit;">Customer Service</h4>
+                                <p style="font-size: 13px; color: inherit; opacity: 0.7;">Tel: 123-456-7890</p>
+                                <p style="font-size: 13px; color: inherit; opacity: 0.7;">Email: info@mysite.com</p>
+                                <div style="display: flex; gap: 15px; margin-top: 20px; color: inherit;">
+                                    <a href="#" style="color: inherit;"><i class="fab fa-instagram"></i></a>
+                                    <a href="#" style="color: inherit;"><i class="fab fa-facebook"></i></a>
+                                    <a href="#" style="color: inherit;"><i class="fab fa-twitter"></i></a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bottom Section -->
+                        <div style="text-align: center; font-size: 12px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 30px; color: inherit; opacity: 0.5;">
+                            &copy; 2026 by Wix. Proudly created with Agentic CRM
+                        </div>
+                    </footer>`
+                }
+            ];
+
             const allBlocks = [
                 ...layoutBlocks,
                 ...contentBlocks,
@@ -1595,7 +2017,9 @@
                 ...mediaBlocks,
                 ...ecommerceBlocks,
                 ...backgroundBlocks,
-                ...formBlocks
+                ...formBlocks,
+                ...iconBlocks,
+                ...professionalBlocks
             ];
 
             allBlocks.forEach(b => {
